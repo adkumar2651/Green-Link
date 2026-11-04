@@ -4,7 +4,8 @@
   "private": true,
   "description": "Green Link waste identification backend",
   "scripts": {
-    "start": "node --env-file=.env server.js"
+    "start": "node server.js",
+    "start:local": "node --env-file=.env server.js"
   },
   "engines": {
     "node": ">=20.6.0"
