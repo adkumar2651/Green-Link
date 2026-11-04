@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KrishiSetu – India's Most Advanced Farmer Intelligence Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --earthy-beige: #FDFBF7;
+            --farm-green: #064E3B;
+            --light-green: #059669;
+            --harvest-gold: #FBBF24;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--earthy-beige);
+            scroll-behavior: smooth;
+            color: #1e293b;
+            font-size: 16px;
+        }
+
+        /* NAVIGATION HOVER LINE EFFECT */
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+        }
+        .nav-link:hover, .active-nav {
+            color: white;
+            opacity: 1;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--harvest-gold);
+            border-radius: 2px;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-link:hover::after, .active-nav::after {
+            width: 100%;
+        }
+
+        .btn-interact {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-interact:active { transform: scale(0.96); }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Ticker Animation */
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .ticker-wrap { overflow: hidden; white-space: nowrap; background: #022c22; }
+        .ticker-content { display: inline-block; animation: ticker 40s linear infinite; }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--earthy-beige); }
+        ::-webkit-scrollbar-thumb { background: var(--farm-green); border-radius: 10px; }
+        
+        .state-btn.active-state {
+            background-color: var(--harvest-gold);
+            color: var(--farm-green);
+            border-color: var(--harvest-gold);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- NAVIGATION -->
+    <nav class="bg-emerald-950 text-white sticky top-0 z-[100] border-b border-emerald-900 shadow-xl">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex items-center gap-3 cursor-pointer btn-interact" onclick="navigateTo('home')">
+                    <div class="bg-amber-400 p-2 rounded-lg shadow-lg">
+                        <i data-lucide="sprout" class="text-emerald-950 w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold tracking-tight block leading-none text-white uppercase tracking-tighter">KrishiSetu</span>
+                        <p class="text-[8px] uppercase tracking-widest text-amber-400 font-bold mt-1">Bharat Network</p>
+                    </div>
+                </div>
+
+                <div class="hidden lg:flex items-center space-x-8 font-semibold text-[13px] uppercase tracking-wider">
+                    <button onclick="navigateTo('home')" id="btn-home" class="nav-link active-nav btn-interact">Home</button>
+                    <button onclick="navigateTo('intelligence')" id="btn-intelligence" class="nav-link btn-interact">Intelligence</button>
+                    <button onclick="navigateTo('mandi')" id="btn-mandi" class="nav-link btn-interact">Mandi Rates</button>
+                    <button onclick="navigateTo('weather')" id="btn-weather" class="nav-link btn-interact">Weather Hub</button>
+                    <button onclick="navigateTo('community')" id="btn-community" class="nav-link btn-interact">Community</button>
+                    <button onclick="navigateTo('transport')" id="btn-transport" class="nav-link btn-interact">Logistics</button>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleLanguage()" class="bg-emerald-900 hover:bg-emerald-800 px-5 py-2 rounded-full text-[10px] font-bold border border-emerald-700 transition-all btn-interact" id="lang-btn">
+                        हिंदी
+                    </button>
+                    <div class="relative cursor-pointer btn-interact p-2 bg-emerald-900 rounded-full">
+                        <i data-lucide="bell" class="w-5 h-5 text-amber-400"></i>
+                        <span class="absolute top-0 right-0 bg-red-500 text-[8px] text-white rounded-full w-4 h-4 flex items-center justify-center font-bold border border-emerald-950">12</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main id="app-content"></main>
+
+    <!-- FOOTER -->
+    <footer class="bg-emerald-950 text-emerald-100 py-16 border-t border-emerald-900">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 text-sm font-medium">
+            <div class="space-y-6">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="sprout" class="text-amber-400 w-8 h-8"></i>
+                    <span class="text-xl font-bold text-white uppercase">KrishiSetu</span>
+                </div>
+                <p class="opacity-50 leading-relaxed text-xs">Empowering 100 Million+ Indian farmers with real-time data, community support, and market access.</p>
+                <div class="flex gap-4">
+                    <i data-lucide="facebook" class="w-5 h-5 cursor-pointer hover:text-amber-400"></i>
+                    <i data-lucide="twitter" class="w-5 h-5 cursor-pointer hover:text-amber-400"></i>
+                    <i data-lucide="youtube" class="w-5 h-5 cursor-pointer hover:text-amber-400"></i>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-6 uppercase text-[10px] tracking-widest text-amber-400">Agricultural Resources</h4>
+                <ul class="space-y-3 opacity-60">
+                    <li>Government Schemes</li>
+                    <li>Organic Farming Guide</li>
+                    <li>Soil Testing Hub</li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-6 uppercase text-[10px] tracking-widest text-amber-400">Support Hub</h4>
+                <ul class="space-y-3 opacity-60">
+                    <li>Expert Helpline</li>
+                    <li>Privacy Policy</li>
+                    <li>APMC Complaints</li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-6 uppercase text-[10px] tracking-widest text-amber-400">Newsletter</h4>
+                <div class="flex flex-col gap-3">
+                    <input type="text" placeholder="Mobile Number" class="bg-emerald-900 border-none rounded-xl px-4 py-3 text-white text-xs outline-none">
+                    <button class="bg-amber-400 text-emerald-950 px-4 py-3 rounded-xl font-bold uppercase text-[10px] tracking-widest btn-interact">Join Now</button>
+                </div>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-8 mt-12 pt-8 border-t border-emerald-900/30 text-center font-bold opacity-20 text-[10px] uppercase tracking-widest">
+            © 2024 KRISHISETU TECHNOLOGIES BHARAT
+        </div>
+    </footer>
+
+    <script>
+        // --- DATA ---
+        let lang = 'en';
+        let currentTab = 'home';
+        let selectedCropId = null;
+        let selectedState = 'Maharashtra';
+        let mandiChart = null;
+        let probChart = null;
+
+        const t = (en, hi) => (lang === 'en' ? en : hi);
+
+        const STATES = [
+            'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 
+            'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 
+            'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 
+            'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Delhi', 'J&K'
+        ];
+
+        const CROPS = [
+            { id: 1, name: 'Wheat', hi: 'गेंहू', type: 'RABI SEASON', soil: 'Loamy/Alluvial', water: '3–4 cycles', seeds: '45kg/acre', yield: '18-22Q/acre', price: '₹2,125/Q', pests: 'Rust, Blight', profit: 'Very High Profit' },
+            { id: 2, name: 'Rice', hi: 'धान', type: 'KHARIF SEASON', soil: 'Clayey/Silt', water: 'High (Standing)', seeds: '10kg/acre', yield: '25-30Q/acre', price: '₹2,040/Q', pests: 'Stem Borer', profit: 'Medium Profit' },
+            { id: 3, name: 'Cotton', hi: 'कपास', type: 'KHARIF SEASON', soil: 'Black Cotton', water: 'Moderate', seeds: '3kg/acre', yield: '12Q/acre', price: '₹6,080/Q', pests: 'Pink Bollworm', profit: 'Very High Profit' },
+            { id: 4, name: 'Sugarcane', hi: 'गन्ना', type: 'ANNUAL CYCLE', soil: 'Deep Loam', water: 'Very High', seeds: '35k sets', yield: '400Q/acre', price: '₹315/Q', pests: 'Red Rot', profit: 'High Profit' },
+            { id: 5, name: 'Onion', hi: 'प्याज', type: 'RABI SEASON', soil: 'Loamy', water: 'Regular', seeds: '4kg/acre', yield: '140Q/acre', price: '₹2,500/Q', pests: 'Thrips', profit: 'Very High Profit' },
+            { id: 6, name: 'Maize', hi: 'मक्का', type: 'KHARIF SEASON', soil: 'Loamy', water: 'Moderate', seeds: '8kg/acre', yield: '22Q/acre', price: '₹1,960/Q', pests: 'Armyworm', profit: 'Medium Profit' }
+        ];
+
+        const COMMUNITY_POSTS = Array.from({ length: 20 }, (_, i) => ({
+            id: i + 1,
+            user: ["Rajesh K.", "Sunita P.", "Anil S.", "Mahesh D.", "Pooja V.", "Vikram R.", "Dinesh Y.", "Karan B.", "Suraj L.", "Meena G."][i % 10],
+            loc: ["Nashik, MH", "Bathinda, PB", "Indore, MP", "Latur, MH", "Guntur, AP", "Karnal, HR", "Bhopal, MP", "Lucknow, UP", "Amravati, MH", "Anand, GJ"][i % 10],
+            q: ["Onion price dropping. Store or sell?", "Wheat leaves rust colored. Help!", "Solar pump subsidy steps?", "Rain alert for harvest week!", "Chili thrips attack help.", "Yield comparison HD3086.", "Sowing depth for Gram?", "Sugarcane Red Rot care.", "Orange price trends?", "Organic compost steps."][i % 10],
+            cat: ["Mandi Talk", "Disease", "Schemes", "Weather", "Pest", "Research", "Sowing", "Disease", "Market", "Organic"][i % 10],
+            votes: Math.floor(Math.random() * 200),
+            answers: Math.floor(Math.random() * 50),
+            expert: i % 3 === 0
+        }));
+
+        const BASE_MANDI = [
+            {c: 'Wheat', v: 'Sharbati', m: 'Central Hub', p: 2150},
+            {c: 'Onion', v: 'Red-L', m: 'Regional APMC', p: 2400},
+            {c: 'Cotton', v: 'H-4', m: 'State Market', p: 6000},
+            {c: 'Potato', v: 'Jyoti', m: 'Main Mandi', p: 1250},
+            {c: 'Rice', v: 'Basmati', m: 'Grain Hub', p: 4000},
+            {c: 'Mustard', v: 'Local', m: 'Oilseed Center', p: 5400}
+        ];
+
+        // --- CORE FUNCTIONS ---
+        function navigateTo(tabId, param = null) {
+            currentTab = tabId;
+            selectedCropId = param;
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active-nav'));
+            const btn = document.getElementById(`btn-${tabId}`);
+            if (btn) btn.classList.add('active-nav');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            render();
+        }
+
+        function toggleLanguage() {
+            lang = lang === 'en' ? 'hi' : 'en';
+            document.getElementById('lang-btn').innerText = lang === 'en' ? 'हिंदी' : 'ENGLISH';
+            render();
+        }
+
+        function selectState(stateName) {
+            selectedState = stateName;
+            render();
+            // Scroll to table
+            document.getElementById('mandi-table-section')?.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function render() {
+            const content = document.getElementById('app-content');
+            content.innerHTML = '';
+            if (currentTab === 'home') renderHome(content);
+            else if (currentTab === 'intelligence') renderIntelligence(content);
+            else if (currentTab === 'mandi') renderMandi(content);
+            else if (currentTab === 'weather') renderWeather(content);
+            else if (currentTab === 'community') renderCommunity(content);
+            else if (currentTab === 'transport') renderTransport(content);
+            else if (currentTab === 'crop-detail') renderCropDetail(content, selectedCropId);
+            lucide.createIcons();
+        }
+
+        // --- RENDERS ---
+
+        function renderHome(container) {
+            container.innerHTML = `
+                <section class="bg-[#064E3B] text-white py-20 px-6 animate-fade-in overflow-hidden relative">
+                    <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
+                        <div class="lg:w-1/2 space-y-10 z-10">
+                            <h1 class="text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight">
+                                ${t("Empowering Bharat's Hand that Feeds.", "भारत के अन्नदाता की शक्ति।")}
+                            </h1>
+                            <p class="text-xl opacity-80 max-w-xl leading-relaxed font-medium italic">
+                                ${t("Access real-time Mandi rates, predictive weather, expert crop advisory, and community support in one simple platform.", "एक ही मंच पर वास्तविक समय मंडी दरें, मौसम पूर्वानुमान, विशेषज्ञ फसल परामर्श और सामुदायिक सहायता प्राप्त करें।")}
+                            </p>
+                            <div class="flex flex-wrap gap-4 pt-4">
+                                <button onclick="navigateTo('intelligence')" class="bg-[#FFB82E] text-[#064E3B] px-8 py-3.5 rounded-xl font-bold text-base hover:bg-white transition-all shadow-xl btn-interact flex items-center gap-2">
+                                    ${t("Get Crop Advice", "फसल परामर्श लें")} <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                                </button>
+                                <button onclick="navigateTo('mandi')" class="bg-transparent border-2 border-white/30 px-8 py-3.5 rounded-xl font-bold text-base hover:bg-white/10 transition-all btn-interact flex items-center gap-2">
+                                    <i data-lucide="trending-up" class="w-5 h-5"></i> ${t("Check Live Rates", "लाइव भाव देखें")}
+                                </button>
+                            </div>
+                        </div>
+                        <div class="lg:w-1/2 w-full flex justify-center lg:justify-end">
+                            <div class="glass-card border border-white/20 p-10 rounded-[3rem] w-full max-w-lg shadow-2xl relative">
+                                <div class="flex justify-between items-center mb-10">
+                                    <h3 class="text-2xl font-bold tracking-tight">${t("Today's Snapshot", "आज की स्थिति")}</h3>
+                                    <span class="bg-emerald-500 text-[10px] px-3 py-1 rounded-full uppercase font-black flex items-center gap-1"><span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span> LIVE</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-8">
+                                    <div class="bg-white/5 p-6 rounded-2xl border border-white/5">
+                                        <p class="text-[9px] uppercase tracking-widest font-black opacity-50 mb-2">Wheat Price</p>
+                                        <p class="text-3xl font-black tracking-tight">₹2,180 <span class="text-emerald-400 text-xs font-bold ml-1">↑ 2%</span></p>
+                                    </div>
+                                    <div class="bg-white/5 p-6 rounded-2xl border border-white/5">
+                                        <p class="text-[9px] uppercase tracking-widest font-black opacity-50 mb-2">Humidity</p>
+                                        <p class="text-3xl font-black tracking-tight">65% <span class="text-amber-400 text-xs font-bold ml-1">High</span></p>
+                                    </div>
+                                    <div class="bg-white/5 p-6 rounded-2xl border border-white/5">
+                                        <p class="text-[9px] uppercase tracking-widest font-black opacity-50 mb-2">Transport</p>
+                                        <p class="text-3xl font-black tracking-tight">12 Trucks</p>
+                                    </div>
+                                    <div class="bg-white/5 p-6 rounded-2xl border border-white/5">
+                                        <p class="text-[9px] uppercase tracking-widest font-black opacity-50 mb-2">Community</p>
+                                        <p class="text-3xl font-black tracking-tight">45 Posts</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderIntelligence(container) {
+            container.innerHTML = `
+                <section class="bg-emerald-50 py-16 border-b border-emerald-100 animate-fade-in">
+                    <div class="max-w-7xl mx-auto px-8">
+                        <h2 class="text-3xl font-bold text-emerald-950 uppercase tracking-tight">${t("Intelligence Engine", "फसल बुद्धिमत्ता")}</h2>
+                        <p class="text-emerald-700 text-base font-medium mt-2">Precision agricultural data for India's heartland.</p>
+                    </div>
+                </section>
+
+                <section class="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-4 gap-12">
+                    <div class="lg:col-span-1">
+                        <div class="bg-white p-8 rounded-3xl shadow-xl border border-emerald-50 sticky top-24 animate-fade-in">
+                            <h4 class="font-bold uppercase tracking-widest text-[10px] mb-8 text-emerald-600">Smart Predictor</h4>
+                            <div class="space-y-6">
+                                <div><label class="text-[10px] font-bold uppercase text-slate-400 mb-2 block">Crop</label><select id="p-crop" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-bold outline-none">${CROPS.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+                                <div><label class="text-[10px] font-bold uppercase text-slate-400 mb-2 block">Soil</label><select id="p-soil" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-bold outline-none"><option>Alluvial</option><option>Black Cotton</option><option>Sandy</option></select></div>
+                                <button onclick="calculateRealProb()" class="w-full bg-emerald-950 text-white py-4 rounded-xl font-bold shadow-xl btn-interact uppercase tracking-widest text-[10px]">Run Analysis</button>
+                            </div>
+                            <div id="prob-results" class="mt-8 hidden border-t border-slate-100 pt-8 text-center animate-fade-in">
+                                <div class="h-40 w-full mb-6"><canvas id="probChartCanvas"></canvas></div>
+                                <p id="prob-text" class="text-4xl font-bold text-emerald-950"></p>
+                                <p class="text-[10px] font-bold uppercase text-emerald-500 tracking-widest mt-2">Success Index</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-8">
+                        ${CROPS.map(c => `
+                            <div class="bg-white rounded-[2rem] border border-slate-100 p-10 shadow-sm card-hover transition-all flex flex-col animate-fade-in">
+                                <div class="flex justify-between items-start mb-6">
+                                    <div>
+                                        <h4 class="text-3xl font-bold text-emerald-950 leading-none mb-2">${c.name}</h4>
+                                        <span class="text-[10px] font-bold uppercase text-emerald-500 tracking-widest">${c.type}</span>
+                                    </div>
+                                    <div class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-black text-[10px] uppercase shadow-sm">${c.profit}</div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-y-10 text-sm mb-12 flex-grow">
+                                    <div><p class="text-[10px] uppercase font-black text-slate-400 mb-2 tracking-widest">SOIL</p><p class="font-bold text-emerald-950 text-xl tracking-tight">${c.soil}</p></div>
+                                    <div><p class="text-[10px] uppercase font-black text-slate-400 mb-2 tracking-widest">WATER REQ.</p><p class="font-bold text-emerald-950 text-xl tracking-tight">${c.water}</p></div>
+                                    <div><p class="text-[10px] uppercase font-black text-slate-400 mb-2 tracking-widest">MARKET PRICE</p><p class="font-bold text-emerald-950 text-xl tracking-tight">${c.price}</p></div>
+                                    <div><p class="text-[10px] uppercase font-black text-slate-400 mb-2 tracking-widest">COMMON PESTS</p><p class="font-bold text-rose-500 text-lg tracking-tight">${c.pests}</p></div>
+                                </div>
+                                <button onclick="navigateTo('crop-detail', ${c.id})" class="w-full py-5 border-2 border-emerald-100 text-emerald-700 rounded-[2rem] font-bold text-sm hover:bg-emerald-50 transition-all btn-interact">View Full Guide</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderMandi(container) {
+            // Region specific data generator
+            const getRegionalPrices = (state) => {
+                const seed = state.length;
+                return BASE_MANDI.map((item, i) => {
+                    const priceMod = (seed * (i + 1) * 7) % 300; 
+                    return { ...item, p: item.p + priceMod - 150, t: priceMod % 2 === 0 ? '+1.4%' : '-0.8%' };
+                });
+            };
+
+            const regionalData = getRegionalPrices(selectedState);
+
+            container.innerHTML = `
+                <div class="ticker-wrap shadow-inner py-3 border-b border-emerald-900">
+                    <div class="ticker-content flex items-center gap-12">
+                        ${regionalData.map(m => `
+                            <div class="flex items-center gap-2 text-white text-[11px] font-bold uppercase tracking-widest">
+                                <span class="text-amber-400">${m.c}:</span> <span>₹${m.p}</span>
+                                <span class="${m.t.includes('+') ? 'text-emerald-400' : 'text-red-400'}">${m.t}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- National Average Trend image_d4de6b.png -->
+                <section class="max-w-7xl mx-auto px-8 py-16 animate-fade-in">
+                    <div class="bg-white rounded-[3rem] shadow-2xl border border-slate-50 p-16">
+                        <div class="flex justify-between items-start mb-12">
+                            <div>
+                                <h2 class="text-5xl font-bold text-emerald-950 tracking-tighter">Wheat (Mustard Variety)</h2>
+                                <p class="text-slate-400 uppercase text-xs font-black tracking-widest mt-2">NATIONAL AVERAGE TREND (7 DAYS)</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-6xl font-black text-emerald-950 tracking-tighter">₹2,180</p>
+                                <p class="text-emerald-500 font-bold text-xl flex items-center gap-2 justify-end mt-2">
+                                    <i data-lucide="arrow-up-right" class="w-6 h-6"></i> +₹45.00
+                                </p>
+                            </div>
+                        </div>
+                        <div class="h-96 w-full">
+                            <canvas id="mandiTrendChartBig"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- BUYER State Explorer Section -->
+                <section class="bg-emerald-950 text-white py-24">
+                    <div class="max-w-7xl mx-auto px-8">
+                        <div class="mb-12">
+                            <h3 class="text-4xl font-bold uppercase tracking-tight text-amber-400">${t("Bharat Market Explorer", "भारत बाजार एक्सप्लोरर")}</h3>
+                            <p class="opacity-60 text-lg mt-2">Click a state to examine local Mandi rates across India.</p>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-3 mb-16">
+                            ${STATES.map(s => `
+                                <button onclick="selectState('${s}')" class="state-btn px-4 py-3 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 hover:text-emerald-950 transition-all btn-interact ${selectedState === s ? 'active-state' : ''}">
+                                    ${s}
+                                </button>
+                            `).join('')}
+                        </div>
+
+                        <div id="mandi-table-section" class="bg-white rounded-[2.5rem] border border-slate-50 shadow-2xl overflow-hidden animate-fade-in">
+                            <div class="bg-emerald-50 px-12 py-8 border-b border-emerald-100 flex justify-between items-center">
+                                <h4 class="text-emerald-950 font-black text-xl uppercase tracking-widest">${selectedState} Market Board</h4>
+                                <span class="bg-emerald-700 text-white px-4 py-1 rounded-full font-black text-[10px] uppercase">LATEST ARRIVALS</span>
+                            </div>
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50 border-b border-slate-100">
+                                    <tr class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                        <th class="px-12 py-8">Commodity</th><th class="px-12 py-8">Center</th><th class="px-12 py-8 text-right">Modal Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-emerald-950">
+                                    ${regionalData.map(d => `
+                                        <tr class="border-b border-slate-50 hover:bg-emerald-50/20 transition-all group">
+                                            <td class="px-12 py-8"><p class="font-bold text-xl uppercase tracking-tighter">${d.c}</p><p class="text-[9px] uppercase font-bold opacity-30 tracking-widest">${d.v}</p></td>
+                                            <td class="px-12 py-8"><p class="font-semibold text-slate-600">${d.m}</p><p class="text-[9px] uppercase font-bold opacity-30">${selectedState}</p></td>
+                                            <td class="px-12 py-8 text-right font-black text-3xl text-emerald-700 tracking-tighter">₹${d.p}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            `;
+            
+            // Render Graph
+            const ctx = document.getElementById('mandiTrendChartBig').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        data: [2100, 2120, 2115, 2145, 2155, 2170, 2180],
+                        borderColor: '#059669',
+                        backgroundColor: 'rgba(5, 150, 105, 0.08)',
+                        fill: true, tension: 0.4, borderWidth: 6, pointRadius: 10, pointBackgroundColor: '#059669'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                    scales: { y: { grid: { borderDash: [5, 5] } }, x: { grid: { display: false } } }
+                }
+            });
+        }
+
+        function renderTransport(container) {
+            container.innerHTML = `
+                <section class="bg-emerald-50 py-16 border-b border-emerald-100 animate-fade-in">
+                    <div class="max-w-7xl mx-auto px-8">
+                        <h2 class="text-3xl font-bold text-emerald-950 uppercase tracking-tight">${t("Logistics Hub", "रसद केंद्र")}</h2>
+                        <p class="text-emerald-700 text-base font-medium mt-2">Verified fleet owners and shared-transport route optimization.</p>
+                    </div>
+                </section>
+
+                <section class="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-2 gap-16 animate-fade-in">
+                    <div class="space-y-12">
+                        <div class="bg-emerald-950 rounded-[3rem] shadow-2xl overflow-hidden relative h-[450px] border-4 border-white flex flex-col items-center justify-center p-12">
+                            <p class="text-amber-400 font-black uppercase text-[10px] tracking-[0.4em] mb-12">Live Delivery Network</p>
+                            <svg width="100%" height="300" viewBox="0 0 400 300" class="drop-shadow-2xl">
+                                <path d="M100,280 Q200,50 350,120" stroke="#FBBF24" stroke-width="6" stroke-dasharray="12 6" fill="none" class="animate-[dash_6s_linear_infinite]" />
+                                <circle cx="100" cy="280" r="12" fill="#FBBF24" />
+                                <circle cx="350" cy="120" r="12" fill="#059669" />
+                                <g class="animate-bounce">
+                                    <rect x="220" y="80" width="45" height="25" rx="6" fill="#FBBF24" />
+                                    <text x="228" y="97" class="fill-emerald-950 text-[9px] font-black uppercase">TRUCK</text>
+                                </g>
+                                <text x="70" y="260" class="text-[12px] font-black fill-white uppercase tracking-widest">Nashik Hub</text>
+                                <text x="310" y="100" class="text-[12px] font-black fill-white uppercase tracking-widest">Vashi Mandi</text>
+                            </svg>
+                        </div>
+                        <div class="bg-white p-12 rounded-[3.5rem] shadow-xl border border-emerald-50">
+                            <h3 class="text-3xl font-black text-emerald-950 mb-10 border-l-8 border-amber-400 pl-8 uppercase tracking-tighter">Transport Request</h3>
+                            <div class="grid grid-cols-2 gap-8">
+                                <div><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">From Village</label><input type="text" value="Nashik Hub" class="w-full bg-slate-50 border-2 border-slate-100 rounded-[2rem] px-8 py-5 font-bold outline-none focus:ring-2 ring-emerald-500"></div>
+                                <div><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Destination</label><input type="text" value="Vashi Mumbai" class="w-full bg-slate-50 border-2 border-slate-100 rounded-[2rem] px-8 py-5 font-bold outline-none focus:ring-2 ring-emerald-500"></div>
+                                <button class="col-span-2 w-full bg-emerald-950 text-white py-8 rounded-[3.5rem] font-black shadow-3xl btn-interact uppercase tracking-widest text-xs">Search Fleet Availability</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-12">
+                        <h3 class="text-4xl font-black text-emerald-950 uppercase tracking-tighter italic">Fleet & Driver Details</h3>
+                        ${[{ v: 'Eicher 407', d: 'Arjun Singh', r: '4.9 ★', p: '₹140/Q' }, { v: 'Tata Ace', d: 'Vikas Patil', r: '4.7 ★', p: '₹110/Q' }].map(t => `
+                            <div class="bg-white p-10 rounded-[4rem] border border-slate-50 shadow-sm flex justify-between items-center card-hover transition-all">
+                                <div class="flex items-center gap-10">
+                                    <div class="bg-emerald-50 p-8 rounded-[2.5rem] text-emerald-700 shadow-inner"><i data-lucide="truck" class="w-10 h-10"></i></div>
+                                    <div><p class="font-black text-emerald-950 text-2xl uppercase tracking-tighter mb-2">${t.v}</p><p class="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">${t.d} • ${t.r}</p></div>
+                                </div>
+                                <div class="text-right"><p class="text-4xl font-black text-emerald-950 tracking-tighter">${t.p}</p><button class="bg-emerald-950 text-white px-8 py-3 rounded-2xl mt-4 text-[10px] font-black uppercase btn-interact shadow-xl">Contact</button></div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderWeather(container) {
+            container.innerHTML = `
+                <section class="bg-sky-600 py-24 text-white text-center animate-fade-in relative overflow-hidden">
+                    <h2 class="text-6xl font-bold mb-4 uppercase tracking-tight">${t("Weather Hub", "मौसम केंद्र")}</h2>
+                    <p class="text-xl opacity-80 font-light mb-12 italic">${new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                    <div class="inline-flex glass-card rounded-2xl px-8 py-6 gap-6 items-center border border-white/20 shadow-2xl text-emerald-950">
+                        <i data-lucide="cloud-sun" class="w-10 h-10 text-amber-400"></i>
+                        <p class="text-lg font-bold text-left leading-snug">Rabi Advisory: Soil moisture optimal at 45%. Sowing cycle active.</p>
+                    </div>
+                </section>
+                <section class="max-w-7xl mx-auto px-6 -mt-12 grid grid-cols-1 md:grid-cols-4 gap-8 mb-32 animate-fade-in">
+                    ${['Humidity: 65%', 'UV Index: 08', 'Soil Temp: 24°C', 'Wind: 14km/h'].map(info => `
+                        <div class="bg-white p-10 rounded-3xl shadow-xl border border-slate-50 text-center card-hover transition-all">
+                            <p class="text-4xl font-bold text-slate-900 leading-none">${info.split(': ')[1]}</p>
+                            <h4 class="font-bold text-slate-300 uppercase text-[10px] tracking-widest mt-4">${info.split(': ')[0]}</h4>
+                        </div>
+                    `).join('')}
+                </section>
+            `;
+        }
+
+        function renderCommunity(container) {
+            container.innerHTML = `
+                <section class="bg-emerald-950 text-white py-20 border-b-4 border-emerald-900 animate-fade-in">
+                    <div class="max-w-7xl mx-auto px-10 flex flex-col md:flex-row justify-between items-center gap-8 relative z-10">
+                        <div><h2 class="text-4xl font-bold uppercase tracking-tight italic">${t("Farmer Chaupal", "किसान चौपाल")}</h2><p class="text-amber-400 text-lg font-bold mt-4 tracking-wide opacity-80 uppercase tracking-widest text-[10px]">2.5 Lakh farmers connected globally.</p></div>
+                        <button class="bg-amber-400 text-emerald-950 px-10 py-4 rounded-xl font-bold uppercase tracking-widest text-[10px] btn-interact shadow-2xl">+ Post Query</button>
+                    </div>
+                </section>
+                <section class="max-w-7xl mx-auto px-6 py-20 animate-fade-in grid grid-cols-1 lg:grid-cols-4 gap-12">
+                    <div class="lg:col-span-3 space-y-8">
+                        ${COMMUNITY_POSTS.map(post => `
+                            <div class="bg-white p-10 rounded-3xl shadow-sm border border-slate-50 card-hover transition-all group">
+                                <div class="flex justify-between items-center mb-8">
+                                    <div class="flex items-center gap-6"><div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-amber-700 font-bold text-xl shadow-inner">${post.user[0]}</div><div><h4 class="font-bold text-emerald-950 text-lg uppercase leading-none">${post.user}</h4><p class="text-[9px] text-slate-300 font-bold mt-2 tracking-widest uppercase">${post.loc}</p></div></div>
+                                    <div class="flex flex-col items-end gap-2"><span class="bg-emerald-50 text-emerald-700 text-[9px] px-4 py-1 rounded-full font-black uppercase">${post.cat}</span>${post.expert ? '<span class="text-[8px] bg-sky-100 text-sky-700 px-2 py-0.5 rounded font-black uppercase animate-pulse">Expert Response</span>' : ''}</div>
+                                </div>
+                                <h3 class="text-xl font-bold text-emerald-950 mb-6 leading-tight group-hover:text-emerald-700 uppercase tracking-tight">${post.q}</h3>
+                                <div class="flex items-center gap-10 pt-8 border-t border-slate-50 text-xs font-bold text-slate-400">
+                                    <button class="flex items-center gap-2 hover:text-emerald-600"><i data-lucide="heart" class="w-4 h-4"></i> ${post.votes}</button>
+                                    <button class="flex items-center gap-2 hover:text-emerald-600"><i data-lucide="message-square" class="w-4 h-4"></i> ${post.answers}</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderCropDetail(container, cropId) {
+            const crop = CROPS.find(c => c.id == cropId);
+            container.innerHTML = `
+                <section class="max-w-6xl mx-auto px-4 py-24 animate-fade-in">
+                    <button onclick="navigateTo('intelligence')" class="flex items-center gap-3 text-emerald-700 font-bold mb-12 hover:underline btn-interact uppercase tracking-widest text-[10px]"><i data-lucide="arrow-left" class="w-4 h-4"></i> Back</button>
+                    <div class="bg-white rounded-[4rem] shadow-2xl border border-emerald-50 overflow-hidden">
+                        <div class="hero-gradient p-20 text-white relative">
+                            <h2 class="text-6xl font-bold mb-4 uppercase tracking-tight">${crop.name} <span class="text-2xl font-light opacity-50 block mt-4 italic font-sans text-white">(${crop.hi})</span></h2>
+                            <div class="flex gap-6 mt-12 text-xs font-bold uppercase tracking-widest"><span class="bg-white/10 border border-white/20 px-6 py-3 rounded-2xl">${crop.type}</span><span class="bg-white/10 border border-white/20 px-6 py-3 rounded-2xl">pH: ${crop.ph || '6.5'}</span></div>
+                        </div>
+                        <div class="p-20 grid grid-cols-1 lg:grid-cols-3 gap-24">
+                            <div class="lg:col-span-2 space-y-16">
+                                <h3 class="text-3xl font-bold text-emerald-950 mb-12 uppercase tracking-tight flex items-center gap-6"><i data-lucide="calendar"></i> Roadmap</h3>
+                                <div class="space-y-12 font-medium">
+                                    ${(crop.guide || [{step:'Preparation', desc:'Standard field prep and fertilization.'}]).map((g, i) => `
+                                        <div class="flex gap-8 group"><div class="flex-shrink-0 w-12 h-12 bg-emerald-50 text-emerald-700 rounded-xl flex items-center justify-center font-bold text-2xl group-hover:bg-emerald-700 group-hover:text-white transition-all shadow-inner">${i+1}</div><div><h4 class="font-bold text-xl text-emerald-950 mb-2 uppercase tracking-tight">${g.step}</h4><p class="text-slate-500 italic text-base">${g.desc}</p></div></div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            `;
+        }
+
+        window.onload = () => { render(); lucide.createIcons(); };
+    </script>
+</body>
+</html>

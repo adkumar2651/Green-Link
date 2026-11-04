@@ -1,0 +1,2881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Green Link</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg:       #14151a;
+            --surface:  #1e1f26;
+            --card:     #25262f;
+            --card2:    #2c2d38;
+            --border:   rgba(255,255,255,0.07);
+            --accent:   #6366f1;
+            --accent-s: rgba(99,102,241,0.15);
+            --amber:    #f59e0b;
+            --amber-s:  rgba(245,158,11,0.15);
+            --rose:     #f43f5e;
+            --rose-s:   rgba(244,63,94,0.12);
+            --sky:      #38bdf8;
+            --sky-s:    rgba(56,189,248,0.12);
+            --text:     #e2e3f0;
+            --muted:    #7c7f9a;
+            --soft:     #a8aacc;
+            --nav-h:    80px;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        ::-webkit-scrollbar { width:3px; }
+        ::-webkit-scrollbar-thumb { background:var(--card2); border-radius:2px; }
+
+        body {
+            font-family:'Inter','Noto Sans Devanagari',sans-serif;
+            background:var(--bg);
+            color:var(--text);
+            min-height:100vh;
+            display:flex;
+            flex-direction:column;
+            overflow-x:hidden;
+            padding-bottom:var(--nav-h);
+        }
+
+        /* ── SPLASH ─────────────────────────────────────────────── */
+        #splash {
+            position:fixed;inset:0;background:var(--bg);z-index:9999;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+            transition:opacity 0.8s ease,visibility 0.8s;
+        }
+        .sp-icon {
+            width:96px;height:96px;border-radius:28px;
+            background:var(--accent);
+            display:flex;align-items:center;justify-content:center;
+            font-size:2.8rem;color:#fff;
+            box-shadow:0 0 50px rgba(99,102,241,0.35);
+        }
+        .sp-title { font-size:2.2rem;font-weight:800;color:#fff; }
+        .sp-sub   { font-size:0.9rem;color:var(--muted);font-weight:500; }
+        .sp-bar   { width:180px;height:3px;background:var(--card2);border-radius:2px;overflow:hidden; }
+        .sp-fill  { height:100%;background:var(--accent);animation:fillBar 2s cubic-bezier(.4,0,.2,1) forwards; }
+        @keyframes fillBar { to{width:100%;} }
+
+        /* ── TOP BAR ─────────────────────────────────────────────── */
+        .topbar {
+            position:sticky;top:0;z-index:100;
+            background:var(--surface);
+            border-bottom:1px solid var(--border);
+            padding:12px 16px;
+            display:flex;align-items:center;justify-content:space-between;
+            gap:12px;
+        }
+        .topbar-brand {
+            display:flex;align-items:center;gap:10px;
+            font-size:1.2rem;font-weight:800;color:#fff;
+        }
+        .topbar-brand .brand-dot {
+            width:32px;height:32px;border-radius:10px;
+            background:var(--accent);
+            display:flex;align-items:center;justify-content:center;
+            font-size:1rem;color:#fff;
+        }
+        .topbar-right { display:flex;align-items:center;gap:10px; }
+        .avatar-btn {
+            width:36px;height:36px;border-radius:50%;
+            background:var(--card2);border:1.5px solid var(--border);
+            display:flex;align-items:center;justify-content:center;
+            font-size:0.75rem;font-weight:800;color:var(--soft);
+            cursor:pointer;
+        }
+        .lang-row { display:flex;gap:6px; }
+        .lbtn {
+            padding:6px 12px;border-radius:8px;font-size:0.82rem;
+            font-weight:700;border:1.5px solid var(--border);
+            color:var(--muted);background:transparent;
+            cursor:pointer;font-family:inherit;transition:all 0.18s;
+        }
+        .lbtn.active { background:var(--accent);border-color:var(--accent);color:#fff; }
+        .lbtn:active { transform:scale(0.93); }
+
+        /* ── TICKER ─────────────────────────────────────────────── */
+        .ticker {
+            background:var(--surface);border-bottom:1px solid var(--border);
+            overflow:hidden;padding:7px 0;
+        }
+        .ticker-inner { display:flex;animation:scroll 30s linear infinite;white-space:nowrap; }
+        .t-item { display:inline-flex;align-items:center;gap:8px;padding:0 24px;font-size:0.78rem;font-weight:600;border-right:1px solid var(--border); }
+        .t-name  { color:var(--muted); }
+        .t-price { color:var(--text); }
+        .t-up    { color:#4ade80; }
+        .t-dn    { color:var(--rose); }
+        @keyframes scroll { to{transform:translateX(-50%);} }
+
+        /* ── STAT STRIP ─────────────────────────────────────────── */
+        .stat-strip { display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border); }
+        .stat-cell {
+            padding:12px 8px;text-align:center;
+            border-right:1px solid var(--border);background:var(--surface);
+        }
+        .stat-cell:last-child { border-right:none; }
+        .stat-emoji { font-size:1.2rem;margin-bottom:3px; }
+        .stat-val   { font-size:1.1rem;font-weight:800;color:#fff;line-height:1; }
+        .stat-lbl   { font-size:0.6rem;color:var(--muted);font-weight:600;margin-top:3px; }
+
+        /* ── VIEWS ─────────────────────────────────────────────── */
+        main { flex:1; }
+        .view { display:none;padding:16px 14px 16px;animation:fadeUp .3s ease; }
+        .view.active { display:block; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+        /* ── SECTION TITLE ──────────────────────────────────────── */
+        .sec-head {
+            display:flex;align-items:center;gap:12px;
+            margin-bottom:16px;padding:14px 16px;
+            background:var(--card);border-radius:16px;
+            border:1px solid var(--border);
+        }
+        .sec-icon {
+            width:48px;height:48px;border-radius:14px;flex-shrink:0;
+            display:flex;align-items:center;justify-content:center;font-size:1.6rem;
+        }
+        .sec-head h1 { font-size:1.3rem;font-weight:800;color:#fff; }
+        .sec-head p  { font-size:0.82rem;color:var(--muted);margin-top:2px;font-weight:500; }
+
+        /* ── CARD ───────────────────────────────────────────────── */
+        .card {
+            background:var(--card);border:1px solid var(--border);
+            border-radius:16px;padding:18px;margin-bottom:12px;
+        }
+        .card-ttl {
+            font-size:0.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+            color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:7px;
+        }
+
+        /* ── SCORE ORB ──────────────────────────────────────────── */
+        .score-ring {
+            width:120px;height:120px;border-radius:50%;flex-shrink:0;
+            border:3px solid var(--card2);
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            position:relative;
+        }
+        .score-ring::before {
+            content:'';position:absolute;inset:-3px;border-radius:50%;
+            border:3px solid transparent;
+            border-top-color:var(--accent);border-right-color:var(--sky);
+            animation:spin 5s linear infinite;
+        }
+        @keyframes spin { to{transform:rotate(360deg);} }
+        .score-num { font-size:2.5rem;font-weight:900;color:#fff;line-height:1; }
+        .score-sub { font-size:0.62rem;font-weight:700;color:var(--accent);margin-top:3px;letter-spacing:1.5px; }
+
+        /* ── MINI STATS ─────────────────────────────────────────── */
+        .mini-grid { display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1; }
+        .mini-cell {
+            background:var(--card2);border-radius:12px;padding:12px 10px;
+            display:flex;align-items:center;gap:10px;
+        }
+        .mini-icon { width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0; }
+        .mini-val { font-size:1.1rem;font-weight:800;color:#fff;line-height:1; }
+        .mini-lbl { font-size:0.65rem;color:var(--muted);font-weight:600;margin-top:2px; }
+
+        /* ── PROGRESS ───────────────────────────────────────────── */
+        .prog-outer { height:10px;background:var(--card2);border-radius:6px;overflow:hidden;margin:8px 0 5px; }
+        .prog-fill  { height:100%;border-radius:6px;transition:width 1.2s ease; }
+        .prog-row   { display:flex;justify-content:space-between;font-size:0.8rem;font-weight:600;color:var(--muted); }
+
+        /* ── BINS ───────────────────────────────────────────────── */
+        .bin { margin-bottom:16px; }
+        .bin:last-child { margin-bottom:0; }
+        .bin-row { display:flex;align-items:center;justify-content:space-between;margin-bottom:6px; }
+        .bin-name { font-size:0.95rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px; }
+        .bin-pct  { font-size:0.9rem;font-weight:800;padding:3px 12px;border-radius:20px; }
+        .bin-warn { font-size:0.78rem;font-weight:700;color:var(--rose);margin-top:5px;display:flex;align-items:center;gap:5px; }
+
+        /* ── ACTIVITY ───────────────────────────────────────────── */
+        .act-item {
+            display:flex;align-items:center;gap:12px;
+            padding:12px 0;border-bottom:1px solid var(--border);
+        }
+        .act-item:last-child { border-bottom:none; }
+        .act-dot { width:10px;height:10px;border-radius:50%;flex-shrink:0; }
+        .act-body { flex:1; }
+        .act-title { font-size:0.9rem;font-weight:700;color:#fff; }
+        .act-sub   { font-size:0.75rem;color:var(--muted);font-weight:500;margin-top:2px; }
+        .act-time  { font-size:0.72rem;color:var(--muted);font-weight:600;white-space:nowrap; }
+
+        /* ── BADGES ─────────────────────────────────────────────── */
+        .badge-row { display:flex;justify-content:space-around;margin-top:6px; }
+        .badge-wrap { display:flex;flex-direction:column;align-items:center;gap:6px;opacity:.3; }
+        .badge-wrap.on { opacity:1; }
+        .badge-icon { width:48px;height:48px;border-radius:50%;background:var(--amber-s);border:1.5px solid rgba(245,158,11,.3);display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:var(--amber); }
+        .badge-lbl  { font-size:0.62rem;color:var(--muted);font-weight:700;text-align:center; }
+
+        /* ── SCAN AREA ──────────────────────────────────────────── */
+        .scan-box {
+            border:2px dashed rgba(99,102,241,.4);border-radius:16px;
+            padding:32px 16px;text-align:center;cursor:pointer;
+            background:var(--accent-s);margin-bottom:12px;transition:all .18s;
+        }
+        .scan-box:active { background:rgba(99,102,241,.25); }
+        .scan-em { font-size:3rem;margin-bottom:8px; }
+        .scan-ttl { font-size:1.1rem;font-weight:800;color:#fff; }
+        .scan-sub { font-size:0.82rem;color:var(--muted);margin-top:4px;font-weight:500; }
+
+        /* ── SLIDERS ─────────────────────────────────────────────── */
+        .sl-item { margin-bottom:18px; }
+        .sl-head { display:flex;align-items:center;justify-content:space-between;margin-bottom:8px; }
+        .sl-name { font-size:0.95rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px; }
+        .sl-val  { font-size:1rem;font-weight:800;color:var(--accent); }
+        .slider {
+            width:100%;height:8px;border-radius:5px;
+            -webkit-appearance:none;appearance:none;outline:none;
+            background:var(--card2);cursor:pointer;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance:none;appearance:none;
+            width:26px;height:26px;border-radius:50%;
+            background:var(--accent);border:2px solid #fff;
+            box-shadow:0 2px 8px rgba(99,102,241,.4);
+        }
+        .slider::-moz-range-thumb {
+            width:26px;height:26px;border-radius:50%;
+            background:var(--accent);border:2px solid #fff;
+        }
+
+        /* ── EST BOX ─────────────────────────────────────────────── */
+        .est-box {
+            background:var(--accent-s);border:1px solid rgba(99,102,241,.25);
+            border-radius:14px;padding:16px;margin-top:14px;
+        }
+        .est-row { display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:0.9rem;font-weight:600;color:var(--soft); }
+        .est-row:last-child { margin-bottom:0; }
+        .est-val { font-size:1.2rem;font-weight:800;color:#fff; }
+
+        /* ── BIG BUTTON ─────────────────────────────────────────── */
+        .btn {
+            width:100%;padding:16px;border-radius:14px;border:none;
+            font-size:1rem;font-weight:800;cursor:pointer;
+            display:flex;align-items:center;justify-content:center;gap:10px;
+            font-family:inherit;transition:all .18s;letter-spacing:.3px;
+        }
+        .btn:active { transform:scale(.97); }
+        .btn-accent { background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.3); }
+        .btn-danger { background:var(--rose-s);border:1px solid rgba(244,63,94,.3);color:var(--rose); }
+        .btn-ghost  { background:transparent;border:1px solid var(--border);color:var(--muted); }
+
+        /* ── MARKET ─────────────────────────────────────────────── */
+        .prod-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+        .prod-card {
+            background:var(--card2);border:1px solid var(--border);
+            border-radius:14px;padding:12px;text-align:center;
+        }
+        .prod-img { width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:8px;display:block; }
+        .prod-name { font-size:0.82rem;font-weight:700;color:#fff;margin-bottom:4px; }
+        .prod-price { font-size:1rem;font-weight:900;color:var(--amber);margin-bottom:8px; }
+        .prod-btn {
+            width:100%;padding:9px;border-radius:9px;border:none;
+            background:var(--accent);color:#fff;font-size:0.82rem;font-weight:800;
+            cursor:pointer;font-family:inherit;transition:all .18s;
+        }
+        .prod-btn:active { transform:scale(.95); }
+        .coin-pill {
+            display:inline-flex;align-items:center;gap:8px;
+            background:var(--amber-s);border:1px solid rgba(245,158,11,.3);
+            border-radius:50px;padding:9px 18px;font-size:1.1rem;font-weight:800;
+            color:var(--amber);margin-bottom:14px;
+        }
+
+        /* ── MAP ────────────────────────────────────────────────── */
+        .map-box {
+            width:100%;height:160px;border-radius:14px;
+            background:linear-gradient(135deg,#1a1b2e,#1e2030);
+            border:1px solid var(--border);position:relative;overflow:hidden;margin-bottom:10px;
+        }
+        .map-line { position:absolute;top:50%;left:8%;right:8%;height:3px;background:linear-gradient(90deg,var(--accent),var(--sky));border-radius:2px;transform:translateY(-50%); }
+        .map-dot  { position:absolute;top:50%;width:13px;height:13px;border-radius:50%;border:2px solid #fff;transform:translateY(-50%); }
+        .md-a { left:8%;background:var(--accent); }
+        .md-b { right:8%;background:var(--sky); }
+        .map-truck { position:absolute;top:35%;left:62%;color:var(--amber);font-size:1.3rem;animation:trk 8s linear infinite; }
+        @keyframes trk { 0%,100%{left:15%} 50%{left:70%} }
+        .map-lbl { position:absolute;top:10px;font-size:0.72rem;font-weight:700;color:var(--muted); }
+        .eta-row { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px; }
+        .eta-pill { background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center; }
+        .eta-lbl  { font-size:0.65rem;color:var(--muted);font-weight:700;margin-bottom:4px; }
+        .eta-val  { font-size:1.3rem;font-weight:900;color:#fff; }
+
+        /* ── CALENDAR ───────────────────────────────────────────── */
+        .cal-grid { display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:12px; }
+        .cal-hdr  { text-align:center;font-size:0.65rem;font-weight:700;color:var(--muted);padding:5px 0; }
+        .cal-day  {
+            aspect-ratio:1;border-radius:9px;display:flex;align-items:center;justify-content:center;
+            font-size:0.85rem;font-weight:700;cursor:pointer;
+            background:var(--card2);border:1px solid transparent;transition:all .15s;
+        }
+        .cal-day:active { transform:scale(.88); }
+        .cal-day.past { opacity:.3;cursor:default; }
+        .cal-day.today { border-color:var(--accent);color:var(--accent); }
+        .cal-day.scheduled { background:var(--accent);color:#fff;border-color:var(--accent); }
+        .cal-day.empty { background:transparent;border:none;cursor:default; }
+
+        /* ── CHALLENGE CARD ─────────────────────────────────────── */
+        .ch-card { background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px; }
+        .ch-top { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px; }
+        .ch-title { font-size:0.95rem;font-weight:800;color:#fff;flex:1; }
+        .ch-rew { font-size:0.88rem;font-weight:900;color:var(--amber);background:var(--amber-s);padding:3px 10px;border-radius:20px;white-space:nowrap;margin-left:8px; }
+        .ch-desc { font-size:0.8rem;color:var(--muted);font-weight:500;margin-bottom:10px;line-height:1.5; }
+        .ch-foot { display:flex;justify-content:space-between;font-size:0.75rem;color:var(--muted);font-weight:600;margin-top:5px; }
+
+        /* ── LEADERBOARD ────────────────────────────────────────── */
+        .lb-item {
+            display:flex;align-items:center;gap:10px;
+            padding:12px 14px;border-radius:12px;margin-bottom:7px;
+            background:var(--card2);border:1px solid var(--border);
+        }
+        .lb-item.me { background:var(--accent-s);border-color:rgba(99,102,241,.3); }
+        .lb-rank { width:32px;height:32px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:0.88rem;font-weight:900;color:#fff;flex-shrink:0; }
+        .lb-rank.gld { background:rgba(251,191,36,.15);color:var(--amber);border:1px solid rgba(251,191,36,.4); }
+        .lb-rank.slv { background:rgba(148,163,184,.1);color:#94a3b8;border:1px solid rgba(148,163,184,.3); }
+        .lb-rank.brz { background:rgba(180,120,60,.1);color:#b87333;border:1px solid rgba(180,120,60,.3); }
+        .lb-av   { width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:#fff;flex-shrink:0; }
+        .lb-name { flex:1;font-size:0.88rem;font-weight:700;color:#fff; }
+        .lb-ec   { font-size:0.88rem;font-weight:900;color:var(--accent); }
+        .lb-kg   { font-size:0.72rem;color:var(--muted);font-weight:600;margin-top:2px;text-align:right; }
+
+        /* ── HOF ─────────────────────────────────────────────────── */
+        .hof-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px; }
+        .hof-c { background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center; }
+        .hof-m { font-size:1.8rem;margin-bottom:4px; }
+        .hof-n { font-size:0.78rem;font-weight:700;color:#fff; }
+        .hof-s { font-size:0.65rem;color:var(--muted);font-weight:600;margin-top:3px; }
+
+        /* ── COMMUNITY GRID ─────────────────────────────────────── */
+        .comm-grid { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px; }
+        .comm-c { background:var(--card2);border-radius:12px;padding:16px;text-align:center; }
+        .comm-v { font-size:1.8rem;font-weight:900;line-height:1; }
+        .comm-l { font-size:0.72rem;color:var(--muted);font-weight:600;margin-top:5px; }
+
+        /* ── PARTNER ─────────────────────────────────────────────── */
+        .partner-box { display:flex;align-items:center;gap:12px;background:var(--card2);border-radius:12px;padding:14px;margin-bottom:12px; }
+        .partner-logo { width:46px;height:46px;border-radius:12px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0; }
+        .partner-n { font-size:0.95rem;font-weight:800;color:#fff; }
+        .partner-t { font-size:0.75rem;color:var(--accent);font-weight:700;margin-top:2px; }
+        .partner-info { font-size:0.82rem;color:var(--muted);font-weight:500;margin-bottom:7px;display:flex;align-items:center;gap:7px; }
+
+        /* ── MANIFEST ────────────────────────────────────────────── */
+        .mf-item { display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border); }
+        .mf-item:last-child { border-bottom:none; }
+        .mf-dot  { width:10px;height:10px;border-radius:50%;flex-shrink:0; }
+        .mf-name { flex:1;font-size:0.9rem;font-weight:700;color:#fff; }
+        .mf-kg   { font-size:0.8rem;color:var(--muted);font-weight:600; }
+        .mf-st   { font-size:0.78rem;font-weight:800; }
+
+        /* ── SCHEDULED ───────────────────────────────────────────── */
+        .sch-item { display:flex;align-items:center;justify-content:space-between;background:var(--accent-s);border:1px solid rgba(99,102,241,.2);border-radius:10px;padding:10px 12px;margin-bottom:7px; }
+        .sch-d { font-size:0.9rem;font-weight:800;color:#fff; }
+        .sch-t { font-size:0.72rem;color:var(--muted);font-weight:600;margin-top:2px; }
+
+        /* ── SCANNER ─────────────────────────────────────────────── */
+        .scan-ov { position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.92);display:none;flex-direction:column;align-items:center;justify-content:center; }
+        .scan-win { width:240px;height:240px;border-radius:20px;overflow:hidden;position:relative;border:2px solid var(--accent);box-shadow:0 0 30px rgba(99,102,241,.4); }
+        .scan-line { position:absolute;left:0;right:0;height:2px;background:var(--accent);animation:sl 2s ease-in-out infinite; }
+        @keyframes sl { 0%,100%{top:10%} 50%{top:85%} }
+        .sc-corner { position:absolute;width:22px;height:22px;border-color:var(--accent)!important;border-style:solid!important;border-width:0!important; }
+        .sc-corner.tl { top:6px;left:6px;border-top-width:2px!important;border-left-width:2px!important;border-radius:4px 0 0 0; }
+        .sc-corner.tr { top:6px;right:6px;border-top-width:2px!important;border-right-width:2px!important;border-radius:0 4px 0 0; }
+        .sc-corner.bl { bottom:6px;left:6px;border-bottom-width:2px!important;border-left-width:2px!important;border-radius:0 0 0 4px; }
+        .sc-corner.br { bottom:6px;right:6px;border-bottom-width:2px!important;border-right-width:2px!important;border-radius:0 0 4px 0; }
+        #scanVid { width:100%;height:100%;object-fit:cover; }
+
+        /* ── PROFILE SHEET ───────────────────────────────────────── */
+        .prof-modal { position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.6);display:none;align-items:flex-end; }
+        .prof-sheet { width:100%;background:var(--surface);border-radius:22px 22px 0 0;padding:24px 16px 36px;border-top:1px solid var(--border); }
+        .fl { display:block;font-size:0.72rem;font-weight:700;color:var(--muted);margin-bottom:7px;letter-spacing:1px;text-transform:uppercase; }
+        .fi { width:100%;padding:14px;border-radius:12px;background:var(--card);border:1px solid var(--border);color:#fff;font-family:inherit;font-size:0.95rem;outline:none;margin-bottom:14px; }
+        .fi:focus { border-color:var(--accent); }
+
+        /* ── CHAT ────────────────────────────────────────────────── */
+        .chat-fab { position:fixed;bottom:calc(var(--nav-h) + 14px);right:14px;z-index:200;width:54px;height:54px;border-radius:50%;background:var(--accent);color:#fff;border:none;display:flex;align-items:center;justify-content:center;font-size:1.3rem;cursor:pointer;box-shadow:0 4px 16px rgba(99,102,241,.4);transition:all .18s; }
+        .chat-fab:active { transform:scale(.9); }
+        .chat-win { position:fixed;bottom:calc(var(--nav-h) + 82px);right:12px;width:calc(100% - 24px);max-width:360px;z-index:300;background:var(--surface);border:1px solid var(--border);border-radius:18px;display:none;flex-direction:column;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.5); }
+        .chat-hdr { display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:var(--accent);color:#fff;font-weight:800;font-size:0.95rem; }
+        .chat-body { height:180px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px; }
+        .c-msg { max-width:80%;padding:10px 12px;border-radius:14px;font-size:0.85rem;font-weight:500;line-height:1.4; }
+        .c-bot { background:var(--card2);color:var(--text);align-self:flex-start;border-bottom-left-radius:3px; }
+        .c-usr { background:var(--accent);color:#fff;align-self:flex-end;border-bottom-right-radius:3px; }
+        .chat-inp { display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--border); }
+        .chat-field { flex:1;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:#fff;font-family:inherit;font-size:0.9rem;outline:none; }
+        .chat-field:focus { border-color:var(--accent); }
+
+        /* ── TOAST ───────────────────────────────────────────────── */
+        #toasts { position:fixed;top:76px;right:12px;z-index:9998;display:flex;flex-direction:column;gap:8px;max-width:calc(100% - 24px); }
+        .toast { background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:12px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.5);animation:tIn .3s cubic-bezier(.34,1.56,.64,1) forwards;pointer-events:all; }
+        .toast.success { border-left-color:#4ade80; }
+        .toast.error   { border-left-color:var(--rose); }
+        .toast.warn    { border-left-color:var(--amber); }
+        .toast.info    { border-left-color:var(--sky); }
+        .t-ico { font-size:0.95rem;margin-top:1px; }
+        .toast.success .t-ico { color:#4ade80; }
+        .toast.error   .t-ico { color:var(--rose); }
+        .toast.warn    .t-ico { color:var(--amber); }
+        .toast.info    .t-ico { color:var(--sky); }
+        .t-bdy { flex:1; }
+        .t-ttl { font-size:0.88rem;font-weight:800;color:#fff; }
+        .t-msg { font-size:0.75rem;color:var(--muted);margin-top:2px;line-height:1.4; }
+        .t-cls { color:var(--muted);cursor:pointer;font-size:0.85rem; }
+        .toast.out { animation:tOut .25s ease-in forwards; }
+        @keyframes tIn  { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes tOut { to{opacity:0;transform:translateX(20px)} }
+
+        /* ── BOTTOM NAV ──────────────────────────────────────────── */
+        .bnav {
+            position:fixed;bottom:0;left:0;right:0;z-index:500;height:var(--nav-h);
+            background:var(--surface);border-top:1px solid var(--border);
+            display:flex;align-items:stretch;
+        }
+        .ntab {
+            flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+            cursor:pointer;border:none;background:transparent;color:var(--muted);
+            font-family:inherit;transition:all .18s;padding:5px 3px;position:relative;
+        }
+        .ntab i    { font-size:1.4rem;transition:all .18s; }
+        .ntab span { font-size:0.58rem;font-weight:700;letter-spacing:.3px; }
+        .ntab.active { color:var(--accent); }
+        .ntab.active i { transform:translateY(-2px);filter:drop-shadow(0 0 6px rgba(99,102,241,.6)); }
+        .ntab.active::before { content:'';position:absolute;top:0;left:25%;right:25%;height:2px;background:var(--accent);border-radius:0 0 3px 3px; }
+        .ntab:active { transform:scale(.92); }
+        .nbadge { position:absolute;top:5px;right:calc(50% - 20px);background:var(--rose);color:#fff;font-size:0.55rem;font-weight:900;padding:2px 5px;border-radius:8px; }
+
+        /* ── CHART CANVAS ────────────────────────────────────────── */
+        .chart-wrap { height:190px;position:relative; }
+
+        @media(min-width:600px) {
+            .mini-grid { grid-template-columns:repeat(4,1fr); }
+            .prod-grid { grid-template-columns:repeat(3,1fr); }
+            .comm-grid { grid-template-columns:repeat(4,1fr); }
+        }
+
+        /* ── WEIGHT SLIDER ── */
+        input[type=range].slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 999px;
+            background: var(--border);
+            outline: none;
+            cursor: pointer;
+            position: relative;
+        }
+        /* Thumb — Chrome/Safari */
+        input[type=range].slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid var(--accent);
+            box-shadow: 0 0 0 4px rgba(99,102,241,.18), 0 2px 8px rgba(0,0,0,.4);
+            cursor: grab;
+            transition: box-shadow .15s, border-color .15s;
+        }
+        input[type=range].slider::-webkit-slider-thumb:active {
+            cursor: grabbing;
+            box-shadow: 0 0 0 7px rgba(99,102,241,.25), 0 2px 12px rgba(0,0,0,.5);
+        }
+        /* Thumb — Firefox */
+        input[type=range].slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid var(--accent);
+            box-shadow: 0 0 0 4px rgba(99,102,241,.18), 0 2px 8px rgba(0,0,0,.4);
+            cursor: grab;
+        }
+        /* Track — Firefox */
+        input[type=range].slider::-moz-range-track {
+            height: 6px;
+            border-radius: 999px;
+            background: var(--border);
+        }
+        /* Filled progress — Firefox */
+        input[type=range].slider::-moz-range-progress {
+            height: 6px;
+            border-radius: 999px;
+            background: var(--accent);
+        }
+
+        /* ── EARNINGS LEDGER & RECEIPT MODAL ── */
+        .ledger-summary-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px; }
+        .ledger-sum-card { background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center; }
+        .ledger-sum-val { font-size:1.25rem;font-weight:900;margin-top:2px; }
+        .ledger-sum-lbl { font-size:0.62rem;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase; }
+
+        .pay-opt-row { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px; }
+        .pay-opt-btn {
+            background:var(--card2);border:1px solid var(--border);color:var(--soft);
+            border-radius:10px;padding:10px 8px;font-family:inherit;font-size:0.8rem;
+            font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;
+            gap:6px;transition:all .18s;
+        }
+        .pay-opt-btn.active {
+            background:rgba(99,102,241,.18);border-color:var(--accent);color:#fff;
+            box-shadow:0 0 0 1px var(--accent);
+        }
+
+        .badge-status { display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:0.68rem;font-weight:800; }
+        .badge-status.paid { background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);color:#4ade80; }
+        .badge-status.pending { background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:#f59e0b; }
+        .badge-mode { display:inline-flex;align-items:center;gap:3px;background:var(--surface);border:1px solid var(--border);padding:2px 7px;border-radius:6px;font-size:0.65rem;font-weight:700;color:var(--soft); }
+
+        .ledger-item {
+            background:var(--card2);border:1px solid var(--border);border-radius:14px;
+            padding:13px 14px;margin-bottom:9px;transition:border-color .15s;
+        }
+        .ledger-item:hover { border-color:rgba(99,102,241,.4); }
+
+        /* Receipt Voucher Sheet */
+        .receipt-paper {
+            background:#181824;border:1px dashed rgba(255,255,255,.15);border-radius:14px;
+            padding:16px;font-family:'Courier New',Courier,monospace;color:#e2e8f0;
+        }
+
+        /* ── DIGITAL LOT TRACKING ── */
+        .lot-card {
+            background:var(--card2);border:1px solid var(--border);border-radius:16px;
+            padding:16px;margin-bottom:12px;transition:border-color .15s,box-shadow .15s;
+        }
+        .lot-card:hover { border-color:rgba(99,102,241,.4); }
+        .lot-id-badge {
+            font-family:monospace;font-size:0.85rem;font-weight:900;color:var(--accent);
+            background:rgba(99,102,241,.12);padding:4px 10px;border-radius:8px;
+            border:1px solid rgba(99,102,241,.28);display:inline-flex;align-items:center;gap:6px;
+        }
+        .lot-status-pill {
+            display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;
+            font-size:0.68rem;font-weight:800;
+        }
+        .lot-status-tagged { background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.3); }
+        .lot-status-transit { background:rgba(56,189,248,.12);color:var(--sky);border:1px solid rgba(56,189,248,.3); }
+        .lot-status-received { background:rgba(167,139,250,.12);color:#a78bfa;border:1px solid rgba(167,139,250,.3); }
+        .lot-status-recycled { background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.3); }
+
+        .lot-step-track {
+            display:flex;align-items:center;justify-content:space-between;position:relative;
+            margin:14px 0 16px;padding:0 8px;
+        }
+        .lot-step-track::before {
+            content:'';position:absolute;top:12px;left:20px;right:20px;height:2px;
+            background:rgba(255,255,255,.08);z-index:1;
+        }
+        .lot-step-node {
+            position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:4px;
+        }
+        .lot-step-dot {
+            width:24px;height:24px;border-radius:50%;background:var(--card);
+            border:2px solid var(--border);display:flex;align-items:center;justify-content:center;
+            font-size:0.62rem;color:var(--muted);font-weight:900;
+        }
+        .lot-step-node.done .lot-step-dot {
+            background:#4ade80;border-color:#4ade80;color:#0b1120;
+        }
+        .lot-step-node.active .lot-step-dot {
+            background:var(--accent);border-color:var(--accent);color:#fff;
+            box-shadow:0 0 0 4px rgba(99,102,241,.25);
+        }
+        .lot-step-lbl { font-size:0.58rem;font-weight:700;color:var(--muted);text-align:center; }
+        .lot-step-node.active .lot-step-lbl, .lot-step-node.done .lot-step-lbl { color:#fff; }
+
+        .barcode-strip {
+            display:flex;align-items:stretch;justify-content:center;gap:2px;height:32px;
+            background:#fff;padding:4px 10px;border-radius:4px;
+        }
+        .barcode-line { background:#000;height:100%; }
+
+        .lot-photo-thumb {
+            width:76px;height:76px;border-radius:12px;object-fit:cover;
+            border:1px solid var(--border);background:var(--surface);flex-shrink:0;
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toasts"></div>
+
+<!-- SPLASH -->
+<div id="splash">
+    <div class="sp-icon"><i class="fa-solid fa-recycle"></i></div>
+    <div class="sp-title">Green Link</div>
+    <div class="sp-sub" data-i18n="splash_tagline">Easy Recycling for Everyone</div>
+    <div class="sp-bar"><div class="sp-fill"></div></div>
+</div>
+
+<!-- PROFILE SHEET -->
+<div class="prof-modal" id="profModal" onclick="if(event.target===this)togProf()">
+    <div class="prof-sheet">
+        <div style="text-align:center;margin-bottom:20px;">
+            <div style="width:70px;height:70px;border-radius:50%;background:var(--accent);margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;color:#fff;">GL</div>
+            <div style="font-size:0.75rem;font-weight:700;color:var(--accent);margin-top:8px;" data-i18n="verified_recycler">VERIFIED RECYCLER</div>
+        </div>
+        <label class="fl" data-i18n="shop_name_label">SHOP NAME</label>
+        <input type="text" class="fi" id="shopIn" value="Green Link Shop">
+        <label class="fl" data-i18n="location_label">LOCATION</label>
+        <input type="text" class="fi" value="District 9" disabled style="opacity:.4;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <span style="font-size:0.95rem;font-weight:700;" data-i18n="push_notifications">Notifications</span>
+            <i class="fa-solid fa-toggle-on" style="color:var(--accent);font-size:1.6rem;cursor:pointer;"></i>
+        </div>
+        <button onclick="saveProf()" class="btn btn-accent" style="margin-bottom:8px;" data-i18n="save_changes">Save</button>
+        <button onclick="togProf()" class="btn btn-ghost">Close</button>
+    </div>
+</div>
+
+<!-- OFFICIAL RECEIPT VOUCHER MODAL -->
+<div class="prof-modal" id="receiptModal" style="align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)closeReceiptModal()">
+    <div style="width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border);border-radius:22px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.75);animation:fadeUp .22s ease;">
+        <div style="background:linear-gradient(135deg,#1e1b4b,#312e81);padding:18px 20px;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid rgba(99,102,241,.3);">
+            <div>
+                <div style="font-size:0.65rem;font-weight:900;letter-spacing:1.5px;color:#a5b4fc;">E-WASTE HANDOVER RECEIPT</div>
+                <div style="font-size:1.15rem;font-weight:900;color:#fff;margin-top:3px;" id="rmTitle">Receipt #EW-0023</div>
+                <div style="font-size:0.72rem;color:#c7d2fe;margin-top:2px;" id="rmDate">08 Sep 2026 · 02:45 PM</div>
+            </div>
+            <button onclick="closeReceiptModal()" style="background:rgba(255,255,255,.12);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div style="padding:18px 20px;max-height:68vh;overflow-y:auto;" id="rmBody">
+            <!-- Rendered by JS -->
+        </div>
+
+        <div style="padding:14px 20px;background:var(--card);border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button onclick="window.print()" class="btn btn-ghost" style="padding:11px;font-size:0.85rem;"><i class="fa-solid fa-print"></i> Print Voucher</button>
+            <button onclick="closeReceiptModal()" class="btn btn-accent" style="padding:11px;font-size:0.85rem;">Done</button>
+        </div>
+    </div>
+</div>
+
+<!-- DIGITAL LOT TRACKING TAG MODAL -->
+<div class="prof-modal" id="lotModal" style="align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)closeLotModal()">
+    <div style="width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border);border-radius:22px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.75);animation:fadeUp .22s ease;">
+        <div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:18px 20px;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid rgba(74,222,128,.3);">
+            <div>
+                <div style="font-size:0.65rem;font-weight:900;letter-spacing:1.5px;color:#86efac;">CPCB E-WASTE LOT TRACKING VOUCHER</div>
+                <div style="font-size:1.15rem;font-weight:900;color:#fff;margin-top:3px;" id="lmLotId">LOT-2026-00125</div>
+                <div style="font-size:0.72rem;color:#d1fae5;margin-top:2px;" id="lmDate">11 Sep 2026 · 10:15 AM</div>
+            </div>
+            <button onclick="closeLotModal()" style="background:rgba(255,255,255,.12);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div style="padding:18px 20px;max-height:68vh;overflow-y:auto;" id="lmBody">
+            <!-- Populated by JS -->
+        </div>
+
+        <div style="padding:14px 20px;background:var(--card);border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button onclick="window.print()" class="btn btn-ghost" style="padding:11px;font-size:0.85rem;"><i class="fa-solid fa-print"></i> Print Lot Tag</button>
+            <button onclick="closeLotModal()" class="btn btn-accent" style="padding:11px;font-size:0.85rem;">Done</button>
+        </div>
+    </div>
+</div>
+
+<!-- SCANNER -->
+<div class="scan-ov" id="scanOv" style="display:none;">
+    <div style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:16px;" data-i18n="scanner_instruction">ALIGN BARCODE WITHIN FRAME</div>
+    <div class="scan-win">
+        <div class="scan-line"></div>
+        <video id="scanVid" autoplay playsinline></video>
+        <div class="sc-corner tl"></div><div class="sc-corner tr"></div>
+        <div class="sc-corner bl"></div><div class="sc-corner br"></div>
+    </div>
+    <button onclick="closeScanner()" class="btn btn-ghost" style="width:auto;padding:12px 32px;margin-top:20px;color:#fff;border-color:rgba(255,255,255,.2);" data-i18n="scanner_cancel">Cancel</button>
+</div>
+
+<!-- CHAT -->
+<button class="chat-fab" onclick="togChat()"><i class="fa-solid fa-headset"></i></button>
+<div class="chat-win" id="chatWin">
+    <div class="chat-hdr">
+        <span data-i18n="chat_header">Support</span>
+        <i class="fa-solid fa-xmark" onclick="togChat()" style="cursor:pointer;"></i>
+    </div>
+    <div class="chat-body" id="chatBody">
+        <div class="c-msg c-bot" data-i18n="chat_welcome">Hello! How can I help? 🌿</div>
+        <div class="c-msg c-bot" data-i18n="chat_help">Ask about recycling rates or pickups.</div>
+    </div>
+    <div class="chat-inp">
+        <input type="text" class="chat-field" id="chatIn" data-i18n-placeholder="chat_placeholder" placeholder="Type..." onkeypress="chatKey(event)">
+        <i class="fa-solid fa-paper-plane" style="color:var(--accent);cursor:pointer;" onclick="sendChat()"></i>
+    </div>
+</div>
+
+<!-- TOP BAR -->
+<header class="topbar">
+    <div class="topbar-brand">
+        <div class="brand-dot"><i class="fa-solid fa-recycle"></i></div>
+        <span data-i18n="brand_name">Green Link</span>
+    </div>
+    <div class="topbar-right">
+        <div class="avatar-btn" onclick="togProf()" id="avBtn" title="Profile">GL</div>
+        <div class="lang-row">
+            <button class="lbtn active" id="lEn" onclick="setLang('en')">EN</button>
+            <button class="lbtn" id="lHi" onclick="setLang('hi')">हिं</button>
+            <button class="lbtn" id="lMr" onclick="setLang('mr')">मरा</button>
+        </div>
+    </div>
+</header>
+
+
+
+<!-- MAIN -->
+<main>
+
+<!-- ── HOME / DASHBOARD ─────────────────────────────────────── -->
+<section id="v-dashboard" class="view active">
+    <div class="sec-head">
+        <div class="sec-icon" style="background:var(--accent-s);color:var(--accent);"><i class="fa-solid fa-seedling"></i></div>
+        <div><h1 data-i18n="title_dashboard">My Dashboard</h1><p data-i18n="sub_dashboard">Welcome back, Partner 🌿</p></div>
+    </div>
+
+
+    <div class="card">
+        <div class="card-ttl"><i class="fa-solid fa-bullseye" style="color:var(--sky);"></i> <span data-i18n="weekly_goal">Weekly Goal</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:1.05rem;font-weight:800;color:#fff;" data-i18n="goal_sub">400 / 500 kg</span>
+            <span id="goalPct" style="font-size:1.3rem;font-weight:900;color:var(--accent);">80%</span>
+        </div>
+        <div class="prog-outer"><div class="prog-fill" id="goalBar" style="width:0%;background:var(--accent);"></div></div>
+        <div style="font-size:0.8rem;color:var(--muted);font-weight:600;" data-i18n="days_remaining">2 days remaining</div>
+    </div>
+
+    <div class="card">
+        <div class="card-ttl"><i class="fa-solid fa-medal" style="color:var(--amber);"></i> <span data-i18n="achievements">Badges</span></div>
+        <div class="badge-row">
+            <div class="badge-wrap on"><div class="badge-icon"><i class="fa-solid fa-medal"></i></div><div class="badge-lbl" data-i18n="green_star">Green Star</div></div>
+            <div class="badge-wrap on"><div class="badge-icon"><i class="fa-solid fa-leaf"></i></div><div class="badge-lbl" data-i18n="eco_warrior">Eco Warrior</div></div>
+            <div class="badge-wrap"><div class="badge-icon" style="background:var(--card2);border-color:var(--border);color:var(--muted);"><i class="fa-solid fa-crown"></i></div><div class="badge-lbl" data-i18n="carbon_king">Carbon King</div></div>
+        </div>
+        <div style="margin-top:12px;background:var(--amber-s);border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:0.75rem;color:var(--muted);font-weight:700;" data-i18n="next_badge_in">Next badge in</div>
+            <div style="font-size:1.2rem;font-weight:900;color:var(--amber);margin-top:2px;">100 kg</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-ttl"><i class="fa-solid fa-wifi" style="color:var(--rose);"></i> <span data-i18n="iot_bin">Bin Status</span></div>
+        <div class="bin">
+            <div class="bin-row"><div class="bin-name">🍶 <span data-i18n="pet_plastic">PET Plastic</span></div><div class="bin-pct" style="background:rgba(74,222,128,.1);color:#4ade80;">65%</div></div>
+            <div class="prog-outer"><div class="prog-fill" style="width:65%;background:#4ade80;"></div></div>
+        </div>
+        <div class="bin">
+            <div class="bin-row"><div class="bin-name">🛍️ <span data-i18n="hdpe_bags">HDPE Bags</span></div><div class="bin-pct" style="background:var(--rose-s);color:var(--rose);">92%</div></div>
+            <div class="prog-outer"><div class="prog-fill" style="width:92%;background:var(--rose);"></div></div>
+            <div class="bin-warn"><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="bin_alert">Schedule Pickup Now!</span></div>
+        </div>
+        <div class="bin" style="margin-bottom:0;">
+            <div class="bin-row"><div class="bin-name">📦 <span data-i18n="cardboard">Cardboard</span></div><div class="bin-pct" style="background:var(--amber-s);color:var(--amber);">43%</div></div>
+            <div class="prog-outer"><div class="prog-fill" style="width:43%;background:var(--amber);"></div></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-ttl"><i class="fa-solid fa-clock-rotate-left" style="color:var(--sky);"></i> <span data-i18n="recent_activity">Recent Activity</span></div>
+        <div class="act-item"><div class="act-dot" style="background:#4ade80;"></div><div class="act-body"><div class="act-title" data-i18n="act_sold">Sold 20kg Mixed Plastic</div><div class="act-sub">+50 EC · +₹36.00</div></div><div class="act-time" data-i18n="time_2h">2h ago</div></div>
+        <div class="act-item"><div class="act-dot" style="background:var(--sky);"></div><div class="act-body"><div class="act-title" data-i18n="act_pickup">Pickup Completed</div><div class="act-sub">Manifest #9021</div></div><div class="act-time" data-i18n="time_yesterday">Yesterday</div></div>
+        <div class="act-item"><div class="act-dot" style="background:var(--amber);"></div><div class="act-body"><div class="act-title" data-i18n="act_redeemed">Redeemed Bio-Bags</div><div class="act-sub">-200 EC</div></div><div class="act-time" data-i18n="time_2days">2 days ago</div></div>
+    </div>
+
+    <div class="card">
+        <div class="card-ttl"><i class="fa-solid fa-chart-area" style="color:var(--accent);"></i> <span data-i18n="revenue_analytics">Revenue Chart</span></div>
+        <div class="chart-wrap"><canvas id="revChart"></canvas></div>
+    </div>
+</section>
+
+
+
+<!-- ── LOGISTICS / TRUCK ────────────────────────────────────── -->
+<section id="v-logistics" class="view">
+    <div class="sec-head">
+        <div class="sec-icon" style="background:var(--sky-s);color:var(--sky);"><i class="fa-solid fa-truck-fast"></i></div>
+        <div><h1 data-i18n="title_logistics">Logistics</h1><p data-i18n="sub_logistics">Track your pickup</p></div>
+    </div>
+
+    <div class="card">
+        <div class="card-ttl"><i class="fa-solid fa-route" style="color:var(--sky);"></i> <span data-i18n="live_route">Live Route</span></div>
+        <div class="map-box">
+            <div class="map-line"></div>
+            <div class="map-dot md-a"></div>
+            <div class="map-dot md-b"></div>
+            <div class="map-truck"><i class="fa-solid fa-truck-fast"></i></div>
+            <div class="map-lbl" style="left:10px;" data-i18n="depot_label">📦 Depot</div>
+            <div class="map-lbl" style="right:10px;" data-i18n="shop_label">🏪 Shop</div>
+        </div>
+        <div class="eta-row">
+            <div class="eta-pill"><div class="eta-lbl" data-i18n="distance_left">DISTANCE</div><div class="eta-val">4.2 km</div></div>
+            <div class="eta-pill" style="background:var(--accent-s);border-color:rgba(99,102,241,.3);"><div class="eta-lbl" data-i18n="eta_label">ETA</div><div class="eta-val" style="color:var(--accent);">14 MIN</div></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-ttl"><i class="fa-solid fa-truck" style="color:var(--amber);"></i> <span data-i18n="inbound_vehicle">Inbound Vehicle</span></div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+            <div style="width:50px;height:50px;background:var(--amber-s);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;border:1px solid rgba(245,158,11,.3);">⚡</div>
+            <div>
+                <div style="font-size:0.95rem;font-weight:800;color:#fff;">Electric Loader · EV-7</div>
+                <div style="font-size:0.82rem;color:var(--muted);font-weight:600;margin-top:3px;">🔋 78% &nbsp;|&nbsp; 👤 Mike R.</div>
+            </div>
+        </div>
+        <div class="prog-outer"><div class="prog-fill" style="width:62%;background:var(--sky);"></div></div>
+        <div style="font-size:0.78rem;color:var(--muted);font-weight:600;margin-top:3px;">62% <span data-i18n="route_completed">route completed</span></div>
+    </div>
+
+    <div class="card">
+        <div class="card-ttl"><i class="fa-solid fa-file-lines" style="color:var(--accent);"></i> <span data-i18n="manifest_title">Manifest #9021</span></div>
+        <div class="mf-item"><div class="mf-dot" style="background:#4ade80;"></div><div class="mf-name" data-i18n="manifest_pet">PET Bottles</div><div class="mf-kg">45 kg</div><div class="mf-st" style="color:#4ade80;" data-i18n="ready_status">✅ READY</div></div>
+        <div class="mf-item"><div class="mf-dot" style="background:#4ade80;"></div><div class="mf-name" data-i18n="manifest_hdpe">HDPE Plastics</div><div class="mf-kg">12 kg</div><div class="mf-st" style="color:#4ade80;" data-i18n="ready_status">✅ READY</div></div>
+        <div class="mf-item"><div class="mf-dot" style="background:var(--amber);"></div><div class="mf-name" data-i18n="manifest_card">Cardboard</div><div class="mf-kg">28 kg</div><div class="mf-st" style="color:var(--amber);" data-i18n="packing_status">📦 PACKING</div></div>
+    </div>
+
+    <div class="card">
+        <div class="card-ttl"><i class="fa-solid fa-calendar-days" style="color:var(--accent);"></i> <span data-i18n="pickup_scheduler">Schedule Pickup</span></div>
+        <div style="font-size:0.95rem;font-weight:800;color:#fff;margin-bottom:3px;" data-i18n="feb_2026">February 2026</div>
+        <div style="font-size:0.78rem;color:var(--muted);font-weight:500;margin-bottom:12px;" data-i18n="click_date">Tap a date to schedule</div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div style="font-size:0.72rem;font-weight:700;color:var(--muted);margin:12px 0 8px;" data-i18n="scheduled_pickups">SCHEDULED</div>
+        <div id="schedList"></div>
+        <button onclick="clearSched()" class="btn btn-danger" style="margin-top:10px;"><i class="fa-solid fa-trash"></i> <span data-i18n="clear_all">Clear All</span></button>
+    </div>
+</section>
+
+<!-- ── E-WASTE ──────────────────────────────────────────────── -->
+<section id="v-ewaste" class="view">
+    <div class="sec-head">
+        <div class="sec-icon" style="background:rgba(244,63,94,.12);color:#f43f5e;"><i class="fa-solid fa-plug-circle-exclamation"></i></div>
+        <div><h1>E-Waste Hub</h1><p>Fair prices · Authorized recyclers · Proof</p></div>
+    </div>
+
+    <!-- DANGER BANNER -->
+    <div style="background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.3);border-left:4px solid #f43f5e;border-radius:14px;padding:14px 16px;margin-bottom:12px;display:flex;gap:12px;align-items:flex-start;">
+        <div style="font-size:1.6rem;flex-shrink:0;">⚠️</div>
+        <div>
+            <div style="font-size:0.95rem;font-weight:800;color:#f43f5e;margin-bottom:4px;">Avoid Unsafe Processing</div>
+            <div style="font-size:0.8rem;color:var(--soft);font-weight:500;line-height:1.6;">Burning cables or using acid on PCBs harms your health &amp; pollutes air, soil and water. Sell only to <strong style="color:#fff;">CPCB-authorized recyclers</strong> listed below and get paid fairly.</div>
+        </div>
+    </div>
+
+
+    <!-- ══ RECYCLER MATCH WIZARD ══ -->
+    <div class="card" style="border:1px solid rgba(99,102,241,.35);background:linear-gradient(135deg,rgba(99,102,241,.07) 0%,var(--card) 60%);">
+
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+            <div style="width:46px;height:46px;background:var(--accent);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;box-shadow:0 4px 14px rgba(99,102,241,.4);">🎯</div>
+            <div>
+                <div style="font-size:1rem;font-weight:900;color:#fff;">Find My Recycler</div>
+                <div style="font-size:0.75rem;color:var(--muted);font-weight:600;margin-top:2px;">Tell us what you have → we find the best match</div>
+            </div>
+        </div>
+
+        <!-- STEP 1 -->
+        <div style="margin-bottom:16px;">
+            <div style="font-size:0.65rem;font-weight:900;letter-spacing:1.5px;color:var(--accent);margin-bottom:10px;">STEP 1 · WHAT MATERIAL DO YOU HAVE?</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;" id="mwMats"></div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div style="margin-bottom:18px;">
+            <div style="font-size:0.65rem;font-weight:900;letter-spacing:1.5px;color:var(--accent);margin-bottom:10px;">STEP 2 · HOW MANY KG DO YOU HAVE?</div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <input type="range" class="slider" id="mwSlider" min="1" max="500" value="50"
+                    oninput="mwSyncSlider(this.value)" style="flex:1;accent-color:var(--accent);">
+                <div style="display:flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;flex-shrink:0;">
+                    <input type="number" id="mwKgInput" min="1" max="9999" value="50"
+                        oninput="mwSyncInput(this.value)"
+                        style="width:60px;background:transparent;border:none;color:#fff;font-size:1rem;font-weight:900;outline:none;text-align:right;">
+                    <span style="font-size:0.8rem;font-weight:700;color:var(--muted);">kg</span>
+                </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:var(--muted);font-weight:600;margin-top:5px;padding:0 2px;">
+                <span>1 kg</span><span>250 kg</span><span>500 kg</span>
+            </div>
+        </div>
+
+        <button onclick="runMatch()" class="btn btn-accent" style="width:100%;padding:15px;font-size:1rem;font-weight:900;box-shadow:0 4px 16px rgba(99,102,241,.35);">
+            <i class="fa-solid fa-bolt"></i> &nbsp;Find Best Recycler Now
+        </button>
+
+        <div id="mwResults" style="margin-top:0;max-height:0;overflow:hidden;transition:max-height .5s ease,margin-top .4s ease;"></div>
+    </div>
+
+    <!-- PRICE BOARD -->
+    <div class="card">
+        <div class="card-ttl"><i class="fa-solid fa-indian-rupee-sign" style="color:#4ade80;"></i> Today's E-Waste Rates</div>
+        <div style="font-size:0.72rem;color:var(--muted);font-weight:600;margin-bottom:14px;">📅 CPCB approved rates · Updated daily</div>
+        <div id="ewPriceBoard"></div>
+    </div>
+
+    <!-- SMART RECYCLER FINDER -->
+    <div class="card">
+        <div class="card-ttl"><i class="fa-solid fa-magnifying-glass-location" style="color:var(--sky);"></i> Smart Recycler Finder</div>
+
+        <!-- Auth notice -->
+        <div style="background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.2);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:0.78rem;font-weight:600;color:var(--sky);display:flex;align-items:center;gap:8px;">
+            <i class="fa-solid fa-shield-halved"></i> Only CPCB / State PCB certified recyclers — ranked by Distance · Price · Auth · Pickup
+        </div>
+
+        <!-- Filter: What do you have? -->
+        <div style="margin-bottom:14px;">
+            <div style="font-size:0.7rem;font-weight:800;letter-spacing:1.2px;color:var(--muted);margin-bottom:9px;">WHAT DO YOU HAVE? (tap to filter)</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;" id="matFilters"></div>
+        </div>
+
+        <!-- Sort bar -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-size:0.72rem;font-weight:700;color:var(--muted);" id="recyclerCount">Showing all 5 recyclers</div>
+            <div style="font-size:0.72rem;font-weight:700;color:var(--accent);">⚡ Smart Ranked</div>
+        </div>
+
+        <!-- Recycler Cards (rendered by JS) -->
+        <div id="recyclerList"></div>
+    </div>
+
+
+    <!-- SUBMIT MATERIAL -->
+    <div class="card">
+        <div class="card-ttl"><i class="fa-solid fa-box-archive" style="color:var(--amber);"></i> Submit Material for Handover</div>
+
+        <div style="background:var(--accent-s);border:1px solid rgba(99,102,241,.25);border-radius:12px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+            <i class="fa-solid fa-building-circle-check" style="color:var(--accent);font-size:1.1rem;flex-shrink:0;"></i>
+            <div>
+                <div style="font-size:0.65rem;font-weight:700;color:var(--muted);letter-spacing:1px;">SELECTED RECYCLER</div>
+                <div style="font-size:0.9rem;font-weight:800;color:#fff;" id="selRecyclerLbl">— Select a recycler above —</div>
+            </div>
+        </div>
+
+        <div id="ewSliders"></div>
+
+        <div class="est-box" style="margin-bottom:14px;">
+            <div class="est-row"><span>Estimated Value</span><span class="est-val">₹<span id="ewEstVal">0.00</span></span></div>
+            <div class="est-row"><span>Total Weight</span><span class="est-val"><span id="ewEstKg">0</span> kg</span></div>
+            <div class="est-row"><span>Recycler</span><span style="font-size:0.78rem;font-weight:700;color:var(--accent);text-align:right;max-width:55%;" id="ewEstRec">—</span></div>
+        </div>
+
+        <!-- PAYMENT DETAILS (Optional / Cash or Digital) -->
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
+            <div style="font-size:0.7rem;font-weight:800;letter-spacing:1px;color:var(--muted);margin-bottom:10px;">PAYMENT DETAILS (भुगतान का तरीका)</div>
+
+            <div style="font-size:0.65rem;font-weight:700;color:var(--soft);margin-bottom:6px;">PAYMENT METHOD (पैसे कैसे मिले):</div>
+            <div class="pay-opt-row">
+                <button type="button" class="pay-opt-btn active" id="btnPayCash" onclick="setPayMode('Cash')">
+                    <i class="fa-solid fa-money-bill-wave" style="color:#4ade80;"></i> 💵 Cash (नकद)
+                </button>
+                <button type="button" class="pay-opt-btn" id="btnPayUpi" onclick="setPayMode('UPI')">
+                    <i class="fa-solid fa-mobile-screen-button" style="color:var(--sky);"></i> 📱 UPI / Bank
+                </button>
+            </div>
+
+            <div style="font-size:0.65rem;font-weight:700;color:var(--soft);margin-bottom:6px;">PAYMENT STATUS (स्थिति):</div>
+            <div class="pay-opt-row">
+                <button type="button" class="pay-opt-btn active" id="btnStatPaid" onclick="setPayStatus('Paid')">
+                    <i class="fa-solid fa-circle-check" style="color:#4ade80;"></i> ✅ Paid (मिल गए)
+                </button>
+                <button type="button" class="pay-opt-btn" id="btnStatPending" onclick="setPayStatus('Pending')">
+                    <i class="fa-solid fa-clock" style="color:#f59e0b;"></i> ⏳ Pending (बाकी)
+                </button>
+            </div>
+        </div>
+
+        <button onclick="genReceipt()" class="btn btn-accent" style="width:100%;padding:14px;font-size:0.95rem;font-weight:900;">
+            <i class="fa-solid fa-file-invoice-dollar"></i> &nbsp;Generate Receipt &amp; Save to Ledger
+        </button>
+    </div>
+
+    <!-- ══ EARNINGS LEDGER & HISTORY ══ -->
+    <div class="card" id="earningsLedgerCard">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+            <div class="card-ttl" style="margin-bottom:0;"><i class="fa-solid fa-wallet" style="color:#4ade80;"></i> My Earnings Ledger (कमाई का हिसाब)</div>
+            <button onclick="clearLedgerHistory()" style="background:transparent;border:none;color:var(--muted);font-size:0.75rem;cursor:pointer;display:flex;align-items:center;gap:4px;" title="Reset Ledger">
+                <i class="fa-solid fa-rotate-right"></i> Reset
+            </button>
+        </div>
+        <div style="font-size:0.75rem;color:var(--muted);font-weight:600;margin-bottom:14px;line-height:1.4;">
+            "Maine kya becha aur kitna paisa mila?" · Complete official handover history
+        </div>
+
+        <!-- Summary Strip -->
+        <div class="ledger-summary-grid">
+            <div class="ledger-sum-card">
+                <div class="ledger-sum-lbl">Received (कमाई)</div>
+                <div class="ledger-sum-val" style="color:#4ade80;" id="ledSumPaid">₹0</div>
+            </div>
+            <div class="ledger-sum-card">
+                <div class="ledger-sum-lbl">Pending (बाकी)</div>
+                <div class="ledger-sum-val" style="color:#f59e0b;" id="ledSumPending">₹0</div>
+            </div>
+            <div class="ledger-sum-card">
+                <div class="ledger-sum-lbl">Total Sold</div>
+                <div class="ledger-sum-val" style="color:var(--sky);" id="ledSumKg">0 kg</div>
+            </div>
+        </div>
+
+        <!-- Filter tabs -->
+        <div style="display:flex;gap:7px;margin-bottom:14px;" id="ledgerFilters">
+            <button onclick="filterLedger('all')" id="lfAll" style="background:var(--accent);color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:0.72rem;font-weight:800;cursor:pointer;">All (<span id="cntAll">0</span>)</button>
+            <button onclick="filterLedger('Paid')" id="lfPaid" style="background:var(--card2);color:var(--soft);border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;">✅ Paid (<span id="cntPaid">0</span>)</button>
+            <button onclick="filterLedger('Pending')" id="lfPending" style="background:var(--card2);color:var(--soft);border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;">⏳ Pending (<span id="cntPending">0</span>)</button>
+        </div>
+
+        <!-- Ledger Entries Container -->
+        <div id="ewLedgerList">
+            <!-- Rendered by loadLedger() & renderLedger() -->
+        </div>
+    </div>
+</section>
+
+<!-- ── DIGITAL LOT TRACKING ─────────────────────────────────── -->
+<section id="v-lot" class="view">
+    <div class="sec-head">
+        <div class="sec-icon" style="background:rgba(99,102,241,.14);color:var(--accent);"><i class="fa-solid fa-boxes-stacked"></i></div>
+        <div><h1>Digital Lot Tracking</h1><p>Unique tracking number &amp; verifiable journey for every collection</p></div>
+    </div>
+
+    <!-- What is a Digital Lot explanation card -->
+    <div style="background:linear-gradient(135deg,rgba(99,102,241,.08) 0%,var(--card) 100%);border:1px solid rgba(99,102,241,.25);border-radius:14px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px;">
+        <div style="width:42px;height:42px;border-radius:12px;background:rgba(99,102,241,.18);display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:var(--accent);flex-shrink:0;">🏷️</div>
+        <div>
+            <div style="font-size:0.92rem;font-weight:900;color:#fff;margin-bottom:3px;">What is a Digital Lot ID?</div>
+            <div style="font-size:0.78rem;color:var(--soft);font-weight:500;line-height:1.5;">
+                Every e-waste batch gets an official <strong>Lot ID</strong> (e.g. <span style="font-family:monospace;color:#c4b5fd;font-weight:800;">LOT-2026-00125</span>). It holds photo proof, weight, GPS location, quoted price, and authorized recycler — acting as a tamper-proof tracking number across the entire recycling chain.
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Statistics Strip -->
+    <div class="ledger-summary-grid">
+        <div class="ledger-sum-card">
+            <div class="ledger-sum-lbl">Active Lots</div>
+            <div class="ledger-sum-val" style="color:var(--accent);" id="lotStatCount">0</div>
+        </div>
+        <div class="ledger-sum-card">
+            <div class="ledger-sum-lbl">Tracked Weight</div>
+            <div class="ledger-sum-val" style="color:var(--sky);" id="lotStatKg">0 kg</div>
+        </div>
+        <div class="ledger-sum-card">
+            <div class="ledger-sum-lbl">Total Value</div>
+            <div class="ledger-sum-val" style="color:#4ade80;" id="lotStatVal">₹0</div>
+        </div>
+    </div>
+
+    <!-- Action Bar: New Lot & Filters -->
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <button onclick="toggleLotCreateCard()" class="btn btn-accent" style="padding:10px 16px;font-size:0.85rem;font-weight:800;display:flex;align-items:center;gap:7px;">
+            <i class="fa-solid fa-circle-plus"></i> Create Digital Lot
+        </button>
+        <button onclick="resetLotsToDefault()" style="background:transparent;border:none;color:var(--muted);font-size:0.75rem;cursor:pointer;display:flex;align-items:center;gap:4px;" title="Reset Lots">
+            <i class="fa-solid fa-rotate-right"></i> Reset Samples
+        </button>
+    </div>
+
+    <!-- Create Lot Form Card (Collapsible) -->
+    <div class="card" id="lotCreateCard" style="display:none;border:1.5px solid rgba(99,102,241,.4);background:linear-gradient(135deg,rgba(99,102,241,.06),var(--card));animation:fadeUp .25s ease;margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div class="card-ttl" style="margin-bottom:0;"><i class="fa-solid fa-tag" style="color:var(--accent);"></i> New Collection Lot</div>
+            <button onclick="toggleLotCreateCard()" style="background:rgba(255,255,255,.08);border:none;color:var(--soft);width:28px;height:28px;border-radius:50%;cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- Lot ID Preview -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div>
+                <div style="font-size:0.62rem;font-weight:800;letter-spacing:1px;color:var(--muted);">AUTO-GENERATED TRACKING ID</div>
+                <div style="font-family:monospace;font-size:1.05rem;font-weight:900;color:#c4b5fd;" id="newLotIdPreview">LOT-2026-00126</div>
+            </div>
+            <span class="badge-status pending">🟡 Ready to Seal</span>
+        </div>
+
+        <!-- Photo Selection -->
+        <div style="margin-bottom:14px;">
+            <label class="fl">📸 PHOTO OF COLLECTION (सामग्री का फोटो)</label>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div id="lotPhotoPreviewBox" style="width:72px;height:72px;border-radius:12px;background:var(--card2);border:2px dashed rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;overflow:hidden;flex-shrink:0;">
+                    <img id="lotPhotoImg" src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&auto=format&fit=crop&q=80" style="width:100%;height:100%;object-fit:cover;" alt="Lot Photo">
+                </div>
+                <div style="flex:1;">
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+                        <button type="button" onclick="setLotPresetPhoto(0,this)" class="pay-opt-btn active" style="padding:5px 8px;font-size:0.7rem;">🖥️ PCBs</button>
+                        <button type="button" onclick="setLotPresetPhoto(1,this)" class="pay-opt-btn" style="padding:5px 8px;font-size:0.7rem;">🔌 Cables</button>
+                        <button type="button" onclick="setLotPresetPhoto(2,this)" class="pay-opt-btn" style="padding:5px 8px;font-size:0.7rem;">🔋 Batteries</button>
+                        <button type="button" onclick="setLotPresetPhoto(3,this)" class="pay-opt-btn" style="padding:5px 8px;font-size:0.7rem;">📱 Phones</button>
+                    </div>
+                    <label style="display:inline-block;padding:6px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:0.72rem;font-weight:700;color:var(--soft);cursor:pointer;">
+                        <i class="fa-solid fa-camera"></i> Upload / Snap Photo
+                        <input type="file" accept="image/*" style="display:none;" onchange="handleLotPhotoUpload(event)">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Material Name / Content -->
+        <div style="margin-bottom:12px;">
+            <label class="fl">📦 MATERIAL DESCRIPTION (कचरे का प्रकार)</label>
+            <input type="text" class="fi" id="newLotMaterial" value="PCB Boards &amp; Processor Chips" placeholder="e.g. Copper Wire &amp; Mixed Cables" style="margin-bottom:0;">
+        </div>
+
+        <!-- Weight -->
+        <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <label class="fl" style="margin-bottom:0;">⚖️ TOTAL WEIGHT (वजन)</label>
+                <span style="font-size:0.72rem;font-weight:800;color:var(--sky);" id="newLotWeightLbl">45 kg</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <input type="number" class="fi" id="newLotWeight" value="45" min="1" max="9999" oninput="document.getElementById('newLotWeightLbl').textContent=this.value+' kg';recalcLotVal();" style="margin-bottom:0;width:110px;text-align:right;">
+                <div style="display:flex;gap:5px;flex-wrap:wrap;flex:1;">
+                    <button type="button" onclick="setLotWeight(25)" class="pay-opt-btn" style="padding:6px 9px;font-size:0.7rem;">25kg</button>
+                    <button type="button" onclick="setLotWeight(45)" class="pay-opt-btn active" style="padding:6px 9px;font-size:0.7rem;">45kg</button>
+                    <button type="button" onclick="setLotWeight(100)" class="pay-opt-btn" style="padding:6px 9px;font-size:0.7rem;">100kg</button>
+                    <button type="button" onclick="setLotWeight(250)" class="pay-opt-btn" style="padding:6px 9px;font-size:0.7rem;">250kg</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location & GPS -->
+        <div style="margin-bottom:12px;">
+            <label class="fl">📍 LOCATION (संग्रहण केंद्र / दुकान)</label>
+            <div style="display:flex;gap:8px;">
+                <input type="text" class="fi" id="newLotLocation" value="Dharavi Hub, Sector 4, Mumbai" style="margin-bottom:0;flex:1;">
+                <button type="button" onclick="detectLotGPS()" class="btn btn-ghost" style="padding:10px 12px;font-size:0.78rem;flex-shrink:0;">
+                    <i class="fa-solid fa-location-crosshairs"></i> GPS
+                </button>
+            </div>
+        </div>
+
+        <!-- Estimated Value vs Quoted Price -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+            <div>
+                <label class="fl">💰 ESTIMATED VALUE</label>
+                <div style="position:relative;">
+                    <span style="position:absolute;left:12px;top:13px;font-weight:800;color:var(--muted);">₹</span>
+                    <input type="number" class="fi" id="newLotEstVal" value="5200" style="padding-left:26px;margin-bottom:0;">
+                </div>
+            </div>
+            <div>
+                <label class="fl">💰 QUOTED PRICE (रीसाइक्लर रेट)</label>
+                <div style="position:relative;">
+                    <span style="position:absolute;left:12px;top:13px;font-weight:800;color:#4ade80;">₹</span>
+                    <input type="number" class="fi" id="newLotQuotedVal" value="5450" style="padding-left:26px;margin-bottom:0;color:#4ade80;font-weight:800;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Assigned Recycler -->
+        <div style="margin-bottom:16px;">
+            <label class="fl">🏭 ASSIGNED AUTHORIZED RECYCLER (रीसाइक्लर)</label>
+            <select class="fi" id="newLotRecycler" style="margin-bottom:0;background:var(--card2);">
+                <option value="EcoSafe Recyclers Pvt Ltd">EcoSafe Recyclers Pvt Ltd · CPCB Auth (4.8★)</option>
+                <option value="GreenCycle Tech Solutions">GreenCycle Tech Solutions · R2 Standard (4.6★)</option>
+                <option value="NexaWaste Management">NexaWaste Management · MoEF Reg (4.4★)</option>
+                <option value="Empower E-Recycle Pvt Ltd">Empower E-Recycle Pvt Ltd · State PCB (4.5★)</option>
+                <option value="ClearWaste Tech Hub">ClearWaste Tech Hub · NABL Lab (4.2★)</option>
+            </select>
+        </div>
+
+        <button onclick="submitNewLot()" class="btn btn-accent" style="width:100%;padding:14px;font-size:0.95rem;font-weight:900;">
+            <i class="fa-solid fa-qrcode"></i> &nbsp;Generate Digital Lot &amp; Print Barcode
+        </button>
+    </div>
+
+    <!-- Filter chips for lots -->
+    <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;" id="lotFilterBar">
+        <button onclick="filterLots('all')" id="ltfAll" style="background:var(--accent);color:#fff;border:none;border-radius:20px;padding:6px 13px;font-size:0.72rem;font-weight:800;cursor:pointer;white-space:nowrap;">All Lots (<span id="cntLotAll">0</span>)</button>
+        <button onclick="filterLots('Tagged')" id="ltfTagged" style="background:var(--card2);color:var(--soft);border:1px solid var(--border);border-radius:20px;padding:6px 11px;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;">🟡 Tagged (<span id="cntLotTagged">0</span>)</button>
+        <button onclick="filterLots('In Transit')" id="ltfTransit" style="background:var(--card2);color:var(--soft);border:1px solid var(--border);border-radius:20px;padding:6px 11px;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;">🚚 Transit (<span id="cntLotTransit">0</span>)</button>
+        <button onclick="filterLots('Received')" id="ltfReceived" style="background:var(--card2);color:var(--soft);border:1px solid var(--border);border-radius:20px;padding:6px 11px;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;">🏭 Received (<span id="cntLotReceived">0</span>)</button>
+        <button onclick="filterLots('Recycled')" id="ltfRecycled" style="background:var(--card2);color:var(--soft);border:1px solid var(--border);border-radius:20px;padding:6px 11px;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;">♻️ Recycled (<span id="cntLotRecycled">0</span>)</button>
+    </div>
+
+    <!-- Lots List -->
+    <div id="lotList">
+        <!-- Rendered by loadLots() & renderLots() -->
+    </div>
+</section>
+
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+    <button class="ntab active" id="t-dashboard" onclick="goTo('dashboard',this)"><i class="fa-solid fa-seedling"></i><span>Home</span></button>
+    <button class="ntab" id="t-ewaste"     onclick="goTo('ewaste',this)"><i class="fa-solid fa-plug-circle-exclamation"></i><span>E-Waste</span></button>
+    <button class="ntab" id="t-lot"        onclick="goTo('lot',this)"><i class="fa-solid fa-boxes-stacked"></i><span>Lots</span></button>
+    <button class="ntab" id="t-logistics"  onclick="goTo('logistics',this)"><i class="fa-solid fa-truck-fast"></i><span>Truck</span></button>
+</nav>
+
+<script>
+/* ── STATE ── */
+let cash=1240.5, coins=850;
+let sell={Pet:0,Bag:0,Box:0,Glass:0};
+let prices={Pet:2.5,Bag:1.8,Box:.5,Glass:.8};
+let co2=1847.36, vs=null, sched=[14];
+let lang = localStorage.getItem('gl_lang') || 'en';
+
+/* ── TRANSLATIONS ── */
+const T = {
+  en:{
+    brand_name:'Green Link',splash_tagline:'Easy Recycling for Everyone',
+    nav_dashboard:'Home',nav_recyclables:'Recycle',nav_ecomarket:'Market',
+    nav_operations:'Ops',nav_logistics:'Truck',nav_challenges:'Earn',nav_leaderboard:'Rank',nav_language:'Language',
+    next_pickup:'Next Pickup',pickup_partner:'Green-Farm Logistics',pickup_time:'Tomorrow @ 08:00 AM',
+    view_profile:'View Profile →',settings_profile:'Settings & Profile',verified_recycler:'VERIFIED RECYCLER',
+    shop_name_label:'SHOP NAME',location_label:'LOCATION',push_notifications:'Notifications',save_changes:'Save',
+    scanner_instruction:'Capture or upload a waste photo',scanner_cancel:'Cancel',
+    chat_header:'Green Link Support',chat_welcome:'Hello! How can I help? 🌿',
+    chat_help:'Ask about recycling rates or pickups.',chat_placeholder:'Type a message...',
+    co2_saved:'CO₂ Saved',trees_equiv:'Trees',km_offset:'km Offset',kwh_saved:'kWh Saved',live_label:'LIVE',
+    impact_score:'Impact Score',elite_tier:'ELITE',trees_saved:'Trees',energy_label:'kWh',water_label:'Litres',diverted_label:'Diverted',
+    weekly_goal:'Weekly Goal',goal_sub:'400 / 500 kg',days_remaining:'2 days remaining',achievements:'Badges',
+    green_star:'Green Star',eco_warrior:'Eco Warrior',carbon_king:'Carbon King',next_badge_in:'Next badge in',
+    iot_bin:'Bin Status',pet_plastic:'PET Plastic',hdpe_bags:'HDPE Bags',cardboard:'Cardboard',bin_alert:'Schedule Pickup Now!',
+    recent_activity:'Recent Activity',act_sold:'Sold 20kg Mixed Plastic',act_pickup:'Pickup Completed',act_redeemed:'Redeemed Bio-Bags',
+    time_2h:'2h ago',time_yesterday:'Yesterday',time_2days:'2 days ago',revenue_analytics:'Revenue Chart',
+    scan_barcode:'Identify Waste',scan_tap:'Capture or upload a waste photo',submit_waste:'Submit Waste for Pickup',
+    pet_bottles:'PET Bottles',plastic_bags:'Plastic Bags',inv_glass:'Glass',
+    est_cash_return:'Cash Return',est_eco_coins:'Eco-Coins',confirm_sale:'Confirm Sale',
+    partner_title:'Partner',partner_name:'Green-Earth Farm',partner_verified:'✅ VERIFIED RECYCLER',
+    partner_info:'Waste processed into reusable pellets',partner_policy:'70% Revenue Share + 1 Coin/kg bonus',
+    material_breakdown:'Material Breakdown',redeem_title:'Redeem Eco-Coins',redeem_desc:'Spend your coins',
+    balance_label:'Balance:',redeem_btn:'REDEEM',live_route:'Live Route',depot_label:'📦 Depot',shop_label:'🏪 Shop',
+    distance_left:'DISTANCE',eta_label:'ETA',inbound_vehicle:'Inbound Vehicle',route_completed:'route completed',
+    manifest_title:'Manifest #9021',manifest_pet:'PET Bottles',manifest_hdpe:'HDPE Plastics',manifest_card:'Cardboard',
+    ready_status:'✅ READY',packing_status:'📦 PACKING',pickup_scheduler:'Schedule Pickup',feb_2026:'February 2026',
+    click_date:'Tap a date to schedule',scheduled_pickups:'SCHEDULED',clear_all:'Clear All',
+    active_challenges:'Active Challenges',ch1_title:'🏆 District Plastic Drive',ch1_desc:'Recycle 1 tonne of mixed plastic before month-end.',
+    ch2_title:'⚡ 7-Day Streak',ch2_desc:'Submit recyclables 7 days in a row. Streak: 5 days.',
+    ch3_title:'🌊 Ocean Plastic Hero',ch3_desc:'Collect 200kg of coastal plastic waste this quarter.',
+    completed_challenges:'Completed',ch4_title:'First Sale',ch5_title:'100kg Milestone',completed_label:'Done',
+    community_impact:'Community Impact',plastic_collected:'Plastic Collected',active_recyclers:'Recyclers',
+    co2_offset:'CO₂ Offset',revenue_distributed:'Revenue Shared',district_lb:'District Leaderboard',
+    top_materials:'Top Materials Recycled',hall_of_fame:'Hall of Fame',
+    title_dashboard:'My Dashboard',sub_dashboard:'Welcome back, Partner 🌿',
+    title_inventory:'Recyclables',sub_inventory:'Set quantity & sell',
+    title_market:'Eco-Market',sub_market:'Spend your Eco-Coins',
+    title_logistics:'Logistics',sub_logistics:'Track your pickup',
+    title_challenges:'Challenges',sub_challenges:'Earn bonus coins!',
+    title_leaderboard:'Leaderboard',sub_leaderboard:'District rankings',
+    toast_welcome_title:'Welcome back! 🌿',toast_welcome_msg:'HDPE Bags bin is 92% full — schedule a pickup soon.',
+    toast_profile_title:'Profile Updated',toast_profile_msg:'Shop name saved successfully.',
+    toast_nothing_title:'Nothing to Sell',toast_nothing_msg:'Use sliders to set quantities first.',
+    toast_insufficient_title:'Insufficient Coins',toast_camera_title:'Camera Unavailable',toast_camera_msg:'Open the main dashboard to capture or upload a waste photo.',
+    toast_scan_title:'Waste Identified',toast_pickup_booked:'Pickup booked for',toast_pickup_removed:'Pickup Removed',
+    toast_schedule_cleared_title:'Schedule Cleared',toast_schedule_cleared_msg:'All pickups removed.',
+    no_pickups:'No pickups scheduled.',
+    bot1:"I'll connect you with an agent shortly!",bot2:'PET bottles: ₹15/kg (estimated).',
+    bot3:'Next pickup is tomorrow at 08:00 AM.',bot4:'You have 850 Eco-Coins to redeem.',bot5:'Schedule a pickup in the Truck section.',
+  },
+  hi:{
+    brand_name:'ग्रीन लिंक',splash_tagline:'सभी के लिए आसान रीसाइक्लिंग',
+    nav_dashboard:'होम',nav_recyclables:'रीसायकल',nav_ecomarket:'मार्केट',
+    nav_operations:'संचालन',nav_logistics:'ट्रक',nav_challenges:'कमाएं',nav_leaderboard:'रैंक',nav_language:'भाषा',
+    next_pickup:'अगला पिकअप',pickup_partner:'ग्रीन-फार्म',pickup_time:'कल @ 08:00 AM',
+    view_profile:'प्रोफ़ाइल →',settings_profile:'सेटिंग्स',verified_recycler:'सत्यापित रीसाइक्लर',
+    shop_name_label:'दुकान का नाम',location_label:'स्थान',push_notifications:'सूचनाएँ',save_changes:'सहेजें',
+    scanner_instruction:'कचरे की फोटो लें या अपलोड करें',scanner_cancel:'रद्द करें',
+    chat_header:'सहायता',chat_welcome:'नमस्ते! कैसे मदद करूँ? 🌿',
+    chat_help:'रीसाइक्लिंग दरों या पिकअप के बारे में पूछें।',chat_placeholder:'संदेश लिखें...',
+    co2_saved:'CO₂ बचाया',trees_equiv:'पेड़',km_offset:'किमी',kwh_saved:'kWh',live_label:'लाइव',
+    impact_score:'प्रभाव स्कोर',elite_tier:'एलीट',trees_saved:'पेड़',energy_label:'kWh',water_label:'लीटर',diverted_label:'डायवर्ट',
+    weekly_goal:'साप्ताहिक लक्ष्य',goal_sub:'400 / 500 किलो',days_remaining:'2 दिन शेष',achievements:'बैज',
+    green_star:'ग्रीन स्टार',eco_warrior:'इको वॉरियर',carbon_king:'कार्बन किंग',next_badge_in:'अगला बैज',
+    iot_bin:'बिन स्थिति',pet_plastic:'PET प्लास्टिक',hdpe_bags:'HDPE बैग',cardboard:'कार्डबोर्ड',bin_alert:'अभी पिकअप शेड्यूल करें!',
+    recent_activity:'हालिया गतिविधि',act_sold:'20 किलो प्लास्टिक बेचा',act_pickup:'पिकअप पूरा',act_redeemed:'बायो-बैग रिडीम',
+    time_2h:'2 घंटे पहले',time_yesterday:'कल',time_2days:'2 दिन पहले',revenue_analytics:'आमदनी चार्ट',
+    scan_barcode:'कचरे की पहचान करें',scan_tap:'फोटो लें या अपलोड करें',submit_waste:'पिकअप के लिए कचरा जमा करें',
+    pet_bottles:'PET बोतलें',plastic_bags:'प्लास्टिक बैग',inv_glass:'काँच',
+    est_cash_return:'नकद वापसी',est_eco_coins:'इको-कॉइन',confirm_sale:'बिक्री की पुष्टि करें',
+    partner_title:'पार्टनर',partner_name:'ग्रीन-अर्थ फार्म',partner_verified:'✅ सत्यापित रीसाइक्लर',
+    partner_info:'कचरे को पुन: प्रयोज्य पैलेट में बदला जाता है',partner_policy:'70% राजस्व + 1 कॉइन/किलो',
+    material_breakdown:'सामग्री विवरण',redeem_title:'इको-कॉइन रिडीम करें',redeem_desc:'कॉइन खर्च करें',
+    balance_label:'बैलेंस:',redeem_btn:'रिडीम',live_route:'लाइव रूट',depot_label:'📦 डिपो',shop_label:'🏪 दुकान',
+    distance_left:'दूरी',eta_label:'समय',inbound_vehicle:'आने वाला वाहन',route_completed:'रूट पूरा',
+    manifest_title:'मैनिफेस्ट #9021',manifest_pet:'PET बोतलें',manifest_hdpe:'HDPE प्लास्टिक',manifest_card:'कार्डबोर्ड',
+    ready_status:'✅ तैयार',packing_status:'📦 पैकिंग',pickup_scheduler:'पिकअप शेड्यूल',feb_2026:'फरवरी 2026',
+    click_date:'पिकअप के लिए तारीख टैप करें',scheduled_pickups:'शेड्यूल किए गए',clear_all:'सब हटाएँ',
+    active_challenges:'सक्रिय चुनौतियाँ',ch1_title:'🏆 जिला प्लास्टिक अभियान',ch1_desc:'महीने के अंत तक 1 टन प्लास्टिक रीसायकल करें।',
+    ch2_title:'⚡ 7-दिन की स्ट्रीक',ch2_desc:'लगातार 7 दिन जमा करें। अभी: 5 दिन।',
+    ch3_title:'🌊 समुद्री प्लास्टिक हीरो',ch3_desc:'इस तिमाही में 200 किलो तटीय प्लास्टिक एकत्र करें।',
+    completed_challenges:'पूर्ण',ch4_title:'पहली बिक्री',ch5_title:'100 किलो माइलस्टोन',completed_label:'हो गया',
+    community_impact:'सामुदायिक प्रभाव',plastic_collected:'प्लास्टिक एकत्रित',active_recyclers:'रीसाइक्लर',
+    co2_offset:'CO₂ ऑफ़सेट',revenue_distributed:'राजस्व बाँटा',district_lb:'जिला लीडरबोर्ड',
+    top_materials:'सर्वाधिक रीसायकल',hall_of_fame:'हॉल ऑफ फेम',
+    title_dashboard:'मेरा डैशबोर्ड',sub_dashboard:'वापस स्वागत है, पार्टनर 🌿',
+    title_inventory:'पुनर्चक्रण योग्य',sub_inventory:'मात्रा सेट करें और बेचें',
+    title_market:'इको-मार्केट',sub_market:'इको-कॉइन खर्च करें',
+    title_logistics:'लॉजिस्टिक्स',sub_logistics:'अपना पिकअप ट्रैक करें',
+    title_challenges:'चुनौतियाँ',sub_challenges:'बोनस कॉइन कमाएं!',
+    title_leaderboard:'लीडरबोर्ड',sub_leaderboard:'जिला रैंकिंग',
+    toast_welcome_title:'वापस स्वागत! 🌿',toast_welcome_msg:'HDPE बैग बिन 92% भरा — जल्द पिकअप शेड्यूल करें।',
+    toast_profile_title:'प्रोफ़ाइल अपडेट',toast_profile_msg:'दुकान का नाम सहेजा गया।',
+    toast_nothing_title:'बेचने को कुछ नहीं',toast_nothing_msg:'स्लाइडर से मात्रा सेट करें।',
+    toast_insufficient_title:'अपर्याप्त कॉइन',toast_camera_title:'कैमरा अनुपलब्ध',toast_camera_msg:'सिम्युलेटेड स्कैन।',
+    toast_scan_title:'बारकोड स्कैन हुआ!',toast_pickup_booked:'पिकअप बुक',toast_pickup_removed:'पिकअप हटाया',
+    toast_schedule_cleared_title:'शेड्यूल साफ़',toast_schedule_cleared_msg:'सभी पिकअप हटाए गए।',
+    no_pickups:'कोई पिकअप शेड्यूल नहीं।',
+    bot1:'मैं जल्द एक एजेंट से जोड़ूंगा!',bot2:'PET बोतलें ₹15/kg (अनुमानित)।',
+    bot3:'अगला पिकअप कल 08:00 AM।',bot4:'850 इको-कॉइन उपलब्ध।',bot5:'पिकअप के लिए ट्रक सेक्शन में जाएँ।',
+  },
+  mr:{
+    brand_name:'ग्रीन लिंक',splash_tagline:'सर्वांसाठी सोपे रिसायकलिंग',
+    nav_dashboard:'होम',nav_recyclables:'रिसायकल',nav_ecomarket:'मार्केट',
+    nav_operations:'संचालन',nav_logistics:'ट्रक',nav_challenges:'कमवा',nav_leaderboard:'क्रम',nav_language:'भाषा',
+    next_pickup:'पुढील पिकअप',pickup_partner:'ग्रीन-फार्म',pickup_time:'उद्या @ 08:00 AM',
+    view_profile:'प्रोफाइल →',settings_profile:'सेटिंग्ज',verified_recycler:'सत्यापित रिसायकलर',
+    shop_name_label:'दुकानाचे नाव',location_label:'स्थान',push_notifications:'सूचना',save_changes:'जतन करा',
+    scanner_instruction:'कचऱ्याचा फोटो घ्या किंवा अपलोड करा',scanner_cancel:'रद्द करा',
+    chat_header:'सहाय्य',chat_welcome:'नमस्कार! कशी मदत करू? 🌿',
+    chat_help:'रिसायकलिंग दर किंवा पिकअपबद्दल विचारा.',chat_placeholder:'संदेश लिहा...',
+    co2_saved:'CO₂ वाचवला',trees_equiv:'झाडे',km_offset:'किमी',kwh_saved:'kWh',live_label:'लाइव्ह',
+    impact_score:'प्रभाव गुण',elite_tier:'एलीट',trees_saved:'झाडे',energy_label:'kWh',water_label:'लीटर',diverted_label:'वळवले',
+    weekly_goal:'साप्ताहिक ध्येय',goal_sub:'400 / 500 किलो',days_remaining:'2 दिवस शिल्लक',achievements:'बॅज',
+    green_star:'ग्रीन स्टार',eco_warrior:'इको वॉरियर',carbon_king:'कार्बन किंग',next_badge_in:'पुढील बॅज',
+    iot_bin:'बिन स्थिती',pet_plastic:'PET प्लास्टिक',hdpe_bags:'HDPE पिशव्या',cardboard:'कार्डबोर्ड',bin_alert:'आत्ता पिकअप शेड्यूल करा!',
+    recent_activity:'अलीकडील क्रियाकलाप',act_sold:'20 किलो प्लास्टिक विकले',act_pickup:'पिकअप पूर्ण',act_redeemed:'बायो-बॅग रिडीम',
+    time_2h:'2 तासांपूर्वी',time_yesterday:'काल',time_2days:'2 दिवसांपूर्वी',revenue_analytics:'उत्पन्न चार्ट',
+    scan_barcode:'कचरा ओळखा',scan_tap:'फोटो घ्या किंवा अपलोड करा',submit_waste:'पिकअपसाठी कचरा जमा करा',
+    pet_bottles:'PET बाटल्या',plastic_bags:'प्लास्टिक पिशव्या',inv_glass:'काच',
+    est_cash_return:'रोख परतावा',est_eco_coins:'इको-कॉइन',confirm_sale:'विक्री निश्चित करा',
+    partner_title:'भागीदार',partner_name:'ग्रीन-अर्थ फार्म',partner_verified:'✅ सत्यापित रिसायकलर',
+    partner_info:'कचऱ्याचे पुनर्वापर योग्य पॅलेटमध्ये रूपांतर',partner_policy:'70% महसूल + 1 कॉइन/किलो',
+    material_breakdown:'साहित्य तपशील',redeem_title:'इको-कॉइन रिडीम करा',redeem_desc:'कॉइन खर्च करा',
+    balance_label:'बॅलन्स:',redeem_btn:'रिडीम',live_route:'लाइव्ह रूट',depot_label:'📦 डेपो',shop_label:'🏪 दुकान',
+    distance_left:'अंतर',eta_label:'वेळ',inbound_vehicle:'येणारे वाहन',route_completed:'रूट पूर्ण',
+    manifest_title:'मॅनिफेस्ट #9021',manifest_pet:'PET बाटल्या',manifest_hdpe:'HDPE प्लास्टिक',manifest_card:'कार्डबोर्ड',
+    ready_status:'✅ तयार',packing_status:'📦 पॅकिंग',pickup_scheduler:'पिकअप शेड्यूल',feb_2026:'फेब्रुवारी 2026',
+    click_date:'पिकअपसाठी तारीख टॅप करा',scheduled_pickups:'शेड्यूल केलेले',clear_all:'सर्व काढा',
+    active_challenges:'सक्रिय आव्हाने',ch1_title:'🏆 जिल्हा प्लास्टिक मोहीम',ch1_desc:'महिन्याच्या अखेरीस 1 टन प्लास्टिक रिसायकल करा.',
+    ch2_title:'⚡ 7-दिवसांची स्ट्रीक',ch2_desc:'सलग 7 दिवस जमा करा. सध्या: 5 दिवस.',
+    ch3_title:'🌊 सागरी प्लास्टिक हिरो',ch3_desc:'या तिमाहीत 200 किलो किनारी प्लास्टिक गोळा करा.',
+    completed_challenges:'पूर्ण',ch4_title:'पहिली विक्री',ch5_title:'100 किलो टप्पा',completed_label:'झाले',
+    community_impact:'सामुदायिक प्रभाव',plastic_collected:'प्लास्टिक गोळा',active_recyclers:'रिसायकलर',
+    co2_offset:'CO₂ ऑफसेट',revenue_distributed:'महसूल वाटप',district_lb:'जिल्हा लीडरबोर्ड',
+    top_materials:'सर्वाधिक रिसायकल',hall_of_fame:'हॉल ऑफ फेम',
+    title_dashboard:'माझा डॅशबोर्ड',sub_dashboard:'पुन्हा स्वागत, भागीदार 🌿',
+    title_inventory:'पुनर्वापर योग्य',sub_inventory:'प्रमाण सेट करा आणि विका',
+    title_market:'इको-मार्केट',sub_market:'इको-कॉइन खर्च करा',
+    title_logistics:'लॉजिस्टिक्स',sub_logistics:'तुमचा पिकअप ट्रॅक करा',
+    title_challenges:'आव्हाने',sub_challenges:'बोनस कॉइन कमवा!',
+    title_leaderboard:'लीडरबोर्ड',sub_leaderboard:'जिल्हा क्रमवारी',
+    toast_welcome_title:'पुन्हा स्वागत! 🌿',toast_welcome_msg:'HDPE पिशव्यांचा बिन 92% भरला — लवकर पिकअप करा.',
+    toast_profile_title:'प्रोफाइल अपडेट',toast_profile_msg:'दुकानाचे नाव जतन केले.',
+    toast_nothing_title:'विकण्यासाठी काहीच नाही',toast_nothing_msg:'प्रमाण स्लायडरने सेट करा.',
+    toast_insufficient_title:'अपुरे कॉइन',toast_camera_title:'कॅमेरा अनुपलब्ध',toast_camera_msg:'सिम्युलेटेड स्कॅन.',
+    toast_scan_title:'बारकोड स्कॅन झाला!',toast_pickup_booked:'पिकअप बुक',toast_pickup_removed:'पिकअप काढला',
+    toast_schedule_cleared_title:'शेड्यूल साफ',toast_schedule_cleared_msg:'सर्व पिकअप काढले.',
+    no_pickups:'कोणताही पिकअप शेड्यूल नाही.',
+    bot1:'मी तुम्हाला लवकरच एजंटशी जोडतो!',bot2:'PET बाटल्या ₹15/किलो (अंदाजे).',
+    bot3:'पुढचा पिकअप उद्या 08:00 AM.',bot4:'850 इको-कॉइन उपलब्ध.',bot5:'पिकअपसाठी ट्रक विभागात जा.',
+  }
+};
+
+function tr(k){ return (T[lang]&&T[lang][k])||T.en[k]||k; }
+
+function setLang(l){
+  lang=l; localStorage.setItem('gl_lang',l);
+  document.documentElement.lang=l;
+  document.querySelectorAll('#lEn,#lHi,#lMr').forEach(b=>b.classList.remove('active'));
+  document.getElementById(l==='en'?'lEn':l==='hi'?'lHi':'lMr').classList.add('active');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent=tr(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{ el.placeholder=tr(el.getAttribute('data-i18n-placeholder')); });
+  buildCal();
+}
+
+/* ── COUNTERS ── */
+function anim(id,target,dec=0){
+  const el=document.getElementById(id); if(!el)return;
+  let s=0,dur=2000;
+  const step=ts=>{if(!s)s=ts;const p=Math.min((ts-s)/dur,1),e=1-Math.pow(1-p,3);el.textContent=(target*e).toFixed(dec);if(p<1)requestAnimationFrame(step);};
+  requestAnimationFrame(step);
+}
+setInterval(()=>{co2+=Math.random()*.02;},3000);
+
+/* ── SPLASH ── */
+setTimeout(()=>{
+  const sp=document.getElementById('splash');
+  sp.style.opacity='0';sp.style.visibility='hidden';
+  setLang(lang);
+  setTimeout(()=>{
+    const gb=document.getElementById('goalBar');
+    if(gb)setTimeout(()=>{gb.style.width='80%';},100);
+  },300);
+},2000);
+
+/* ── NAV ── */
+function goTo(id,el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const target = document.getElementById('v-'+id);
+  if(target) target.classList.add('active');
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ── PROFILE ── */
+function togProf(){const m=document.getElementById('profModal');m.style.display=m.style.display==='flex'?'none':'flex';}
+function saveProf(){
+  const n=document.getElementById('shopIn').value;
+  document.getElementById('avBtn').textContent=n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()||'GL';
+  togProf(); toast('success',tr('toast_profile_title'),tr('toast_profile_msg'));
+}
+
+/* ── SCANNER ── */
+function togScanner(){
+  window.location.assign('index.html?openScanner=1');
+}
+function closeScanner(){document.getElementById('scanOv').style.display='none';if(vs){vs.getTracks().forEach(t=>t.stop());vs=null;}}
+
+/* ── CHAT ── */
+function togChat(){const c=document.getElementById('chatWin');c.style.display=c.style.display==='flex'?'none':'flex';}
+function sendChat(){
+  const inp=document.getElementById('chatIn'),body=document.getElementById('chatBody');
+  if(!inp.value.trim())return;
+  const um=document.createElement('div');um.className='c-msg c-usr';um.textContent=inp.value;
+  body.appendChild(um);inp.value='';body.scrollTop=body.scrollHeight;
+  setTimeout(()=>{
+    const bm=document.createElement('div');bm.className='c-msg c-bot';
+    const replies=[tr('bot1'),tr('bot2'),tr('bot3'),tr('bot4'),tr('bot5')];
+    bm.textContent=replies[Math.floor(Math.random()*5)];
+    body.appendChild(bm);body.scrollTop=body.scrollHeight;
+  },900);
+}
+function chatKey(e){if(e.key==='Enter')sendChat();}
+
+/* ── SELL ── */
+function updEst(type,val){
+  sell[type]=parseInt(val);
+  document.getElementById('val'+type).textContent=val+' kg';
+  const tc=Object.keys(sell).reduce((a,k)=>a+sell[k]*(prices[k]||0),0);
+  const ts=Object.values(sell).reduce((a,b)=>a+b,0);
+  document.getElementById('estCash').textContent=tc.toFixed(2);
+  document.getElementById('estCoins').textContent=ts;
+}
+function doSale(){
+  const pc=parseFloat(document.getElementById('estCash').textContent);
+  const ps=parseInt(document.getElementById('estCoins').textContent);
+  if(pc<=0){toast('warn',tr('toast_nothing_title'),tr('toast_nothing_msg'));return;}
+  cash+=pc;coins+=ps;updWallet();
+  toast('success','Sale Confirmed! 🎉',`+₹${pc.toFixed(2)} and +${ps} EC added.`);
+  document.querySelectorAll('.slider').forEach(s=>{s.value=0;s.dispatchEvent(new Event('input'));});
+}
+function buyItem(cost,name){
+  if(coins>=cost){coins-=cost;updWallet();toast('success',`Redeemed: ${name}`,`${cost} EC spent.`);}
+  else{toast('error',tr('toast_insufficient_title'),`Need ${cost-coins} more EC.`);}
+}
+function updWallet(){const mb=document.getElementById('mktBal');if(mb)mb.textContent=coins;}
+
+/* ── CALENDAR ── */
+function buildCal(){
+  const g=document.getElementById('calGrid');if(!g)return;
+  const days=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  g.innerHTML=days.map(d=>`<div class="cal-hdr">${d}</div>`).join('');
+  for(let d=1;d<=28;d++){
+    const past=d<14,today=d===14,sc=sched.includes(d);
+    let c='cal-day';if(past)c+=' past';if(today)c+=' today';if(sc)c+=' scheduled';
+    g.innerHTML+=`<div class="${c}" onclick="togSched(${d})">${d}</div>`;
+  }
+  renderSchedList();
+}
+function togSched(d){
+  if(d<14)return;
+  if(sched.includes(d)){sched=sched.filter(x=>x!==d);toast('info',tr('toast_pickup_removed'),`Feb ${d} cancelled.`);}
+  else{sched.push(d);toast('success',tr('toast_pickup_booked'),`Feb ${d}, 2026 @ 08:00 AM.`);}
+  buildCal();
+}
+function clearSched(){sched=[];buildCal();toast('info',tr('toast_schedule_cleared_title'),tr('toast_schedule_cleared_msg'));}
+function renderSchedList(){
+  const el=document.getElementById('schedList');if(!el)return;
+  if(!sched.length){el.innerHTML=`<div style="font-size:.82rem;color:var(--muted);font-weight:600;">${tr('no_pickups')}</div>`;return;}
+  el.innerHTML=[...sched].sort((a,b)=>a-b).map(d=>`
+    <div class="sch-item">
+      <div><div class="sch-d">📅 Feb ${d}</div><div class="sch-t">08:00 AM</div></div>
+      <i class="fa-solid fa-xmark" style="color:var(--muted);cursor:pointer;" onclick="togSched(${d})"></i>
+    </div>`).join('');
+}
+
+/* ── LEADERBOARD ── */
+const lbD=[
+  {n:'EcoMart Central',kg:2847,ec:3200,c:'#6366f1'},
+  {n:'GreenZone Retail',kg:2341,ec:2750,c:'#38bdf8'},
+  {n:'FreshLoop Store',kg:1980,ec:2100,c:'#a78bfa'},
+  {n:'Green Link Shop ★',kg:1640,ec:1850,c:'#6366f1',me:true},
+  {n:'NaturaPack',kg:1420,ec:1520,c:'#f59e0b'},
+  {n:'EarthFirst Hub',kg:1180,ec:1240,c:'#f43f5e'},
+  {n:'CycleUp Mart',kg:960,ec:1020,c:'#38bdf8'},
+];
+const rk=['gld','slv','brz','','','',''];
+function initLb(){
+  document.getElementById('lbList').innerHTML=lbD.map((p,i)=>`
+    <div class="lb-item ${p.me?'me':''}">
+      <div class="lb-rank ${rk[i]}">${i+1}</div>
+      <div class="lb-av" style="background:${p.c};">${p.n.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+      <div class="lb-name">${p.n}</div>
+      <div><div class="lb-ec">${p.ec.toLocaleString()} EC</div><div class="lb-kg">${p.kg.toLocaleString()} kg</div></div>
+    </div>`).join('');
+
+  const ctx=document.getElementById('lbChart').getContext('2d');
+  new Chart(ctx,{type:'bar',data:{labels:lbD.map(p=>p.n.split(' ')[0]),datasets:[{data:lbD.map(p=>p.kg),backgroundColor:lbD.map(p=>p.c+'44'),borderColor:lbD.map(p=>p.c),borderWidth:1.5,borderRadius:7}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#7c7f9a',font:{size:10}}},x:{grid:{display:false},ticks:{color:'#7c7f9a',font:{size:9}}}},plugins:{legend:{display:false}}}});
+}
+
+
+/* ── TOAST ── */
+function toast(type,title,msg,dur=4000){
+  const icons={success:'fa-circle-check',error:'fa-circle-xmark',warn:'fa-triangle-exclamation',info:'fa-circle-info'};
+  const el=document.createElement('div');el.className=`toast ${type}`;
+  el.innerHTML=`<i class="t-ico fa-solid ${icons[type]}"></i><div class="t-bdy"><div class="t-ttl">${title}</div><div class="t-msg">${msg}</div></div><i class="t-cls fa-solid fa-xmark" onclick="dismissToast(this.parentElement)"></i>`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>dismissToast(el),dur);
+}
+function dismissToast(el){if(!el||el.classList.contains('out'))return;el.classList.add('out');setTimeout(()=>el.remove(),250);}
+
+/* ── INIT ── */
+window.onload=function(){
+  const ctx=document.getElementById('revChart').getContext('2d');
+  const g=ctx.createLinearGradient(0,0,0,190);
+  g.addColorStop(0,'rgba(99,102,241,.2)');g.addColorStop(1,'rgba(99,102,241,0)');
+  new Chart(ctx,{type:'line',data:{labels:['Aug','Sep','Oct','Nov','Dec','Jan','Feb'],datasets:[{data:[420,680,590,920,1050,1180,1240],borderColor:'#6366f1',borderWidth:2,backgroundColor:g,fill:true,tension:.4,pointBackgroundColor:'#6366f1',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#7c7f9a',font:{size:10}}},x:{grid:{display:false},ticks:{color:'#7c7f9a',font:{size:10}}}},plugins:{legend:{display:false}}}});
+  buildCal();
+  initEwaste();
+  setTimeout(()=>toast('info',tr('toast_welcome_title'),tr('toast_welcome_msg')),2400);
+};
+
+/* ══════════════════════════════════════════════
+   RECYCLER DATABASE & SMART FINDER
+══════════════════════════════════════════════ */
+const recyclerDB = [
+  {
+    id:'ecosafe', emoji:'🏭', name:'EcoSafe Recyclers Pvt Ltd',
+    area:'Andheri West, Mumbai', distance:2.3,
+    auth:'CPCB', authLabel:'CPCB Auth · ISO 14001 · OHSAS', authScore:30,
+    rating:4.8, phone:'9876543210',
+    pickup:true, pickupMin:5, pickupLabel:'Free Pickup (min 5 kg)',
+    hours:'Mon–Sat · 9 AM – 6 PM',
+    serviceArea:'Andheri, Jogeshwari, Goregaon, Malad',
+    services:['Free Pickup','Same-Day Processing','Digital Receipt','Bulk Discount','Doorstep Collection'],
+    accepts:['pcb','cpu','ram','copper','mobile','laptop','hdd','cable','comp','batt','tv','printer'],
+    rates:{pcb:110,cpu:200,ram:80,copper:145,mobile:25,laptop:15,hdd:30,cable:17,comp:10,batt:8,tv:5,printer:6}
+  },
+  {
+    id:'greencycle', emoji:'♻️', name:'GreenCycle Tech Solutions',
+    area:'Kurla East, Mumbai', distance:5.1,
+    auth:'CPCB', authLabel:'CPCB Auth · R2 Standard · MoEF', authScore:30,
+    rating:4.6, phone:'9123456780',
+    pickup:true, pickupMin:10, pickupLabel:'Free Pickup (min 10 kg)',
+    hours:'Mon–Sat · 8 AM – 7 PM',
+    serviceArea:'Kurla, Sion, Chembur, Ghatkopar',
+    services:['Free Pickup','PCB Specialist','Certified Data Destruction','Bulk Rates','GST Invoice'],
+    accepts:['pcb','cpu','ram','copper','hdd','cable','motor','psu','comp','laptop'],
+    rates:{pcb:115,cpu:220,ram:85,copper:150,hdd:32,cable:18,motor:16,psu:13,comp:11,laptop:16}
+  },
+  {
+    id:'nexawaste', emoji:'⚡', name:'NexaWaste Management',
+    area:'Bhiwandi, Thane', distance:7.8,
+    auth:'CPCB', authLabel:'CPCB Auth · MoEF Registered', authScore:30,
+    rating:4.4, phone:'9988776655',
+    pickup:true, pickupMin:20, pickupLabel:'Pickup for Bulk (min 20 kg)',
+    hours:'Mon–Sun · 7 AM – 8 PM',
+    serviceArea:'Bhiwandi, Thane, Kalyan, Dombivali',
+    services:['Bulk Pickup','Highest Bulk Rates','All E-Waste Accepted','Weekend Open','Scrap Truck Available'],
+    accepts:['pcb','cpu','ram','copper','mobile','laptop','hdd','cable','motor','psu','comp','batt','tv','printer','fridge','plast'],
+    rates:{pcb:105,cpu:190,ram:75,copper:140,mobile:22,laptop:13,hdd:28,cable:15,motor:15,psu:12,comp:9,batt:7,tv:4,printer:5,fridge:8,plast:3}
+  },
+  {
+    id:'empower', emoji:'🌿', name:'Empower E-Recycle Pvt Ltd',
+    area:'Govandi, Mumbai', distance:4.2,
+    auth:'State', authLabel:'State PCB Certified · ISO 9001', authScore:22,
+    rating:4.5, phone:'9765432100',
+    pickup:false, pickupMin:0, pickupLabel:'Drop-off Only',
+    hours:'Mon–Fri · 10 AM – 5 PM',
+    serviceArea:'Govandi, Mankhurd, Trombay, Deonar',
+    services:['High PCB Rates','Battery Specialist','Instant Cash Payment','No Min Quantity','Walk-in Welcome'],
+    accepts:['pcb','cpu','ram','batt','mobile','hdd','comp'],
+    rates:{pcb:118,cpu:210,ram:82,batt:9,mobile:24,hdd:31,comp:10}
+  },
+  {
+    id:'clearwaste', emoji:'🔬', name:'ClearWaste Tech Hub',
+    area:'Navi Mumbai, Turbhe', distance:9.5,
+    auth:'State', authLabel:'State PCB Certified · NABL Lab', authScore:22,
+    rating:4.2, phone:'9654321098',
+    pickup:true, pickupMin:15, pickupLabel:'Pickup (min 15 kg)',
+    hours:'Tue–Sun · 9 AM – 5 PM',
+    serviceArea:'Navi Mumbai, Vashi, Nerul, Belapur',
+    services:['NABL Certified Lab','Detailed Item Report','Copper Specialist','Company Disposal','Data Destruction Certificate'],
+    accepts:['pcb','copper','cable','motor','psu','laptop','comp','tv','fridge','printer'],
+    rates:{pcb:108,copper:155,cable:19,motor:17,psu:14,laptop:14,comp:8,tv:6,fridge:9,printer:7}
+  }
+];
+
+/* Material filter options shown as chips */
+const matFilterOpts = [
+  {id:'pcb',    label:'🖥️ PCB Board'},
+  {id:'cpu',    label:'⚡ CPU'},
+  {id:'ram',    label:'💾 RAM'},
+  {id:'copper', label:'🔩 Copper Wire'},
+  {id:'mobile', label:'📱 Mobile'},
+  {id:'laptop', label:'💻 Laptop'},
+  {id:'hdd',    label:'💿 HDD'},
+  {id:'cable',  label:'🔌 Cables'},
+  {id:'motor',  label:'⚙️ Motor'},
+  {id:'batt',   label:'🔋 Battery'},
+  {id:'tv',     label:'📺 TV/LCD'},
+  {id:'comp',   label:'🖥️ Desktop'},
+];
+
+let activeFilter = null; // null = show all
+
+function calcScore(r, matId){
+  /* Score out of 100:
+     Distance  → max 30 pts (closer = higher)
+     Price     → max 30 pts (higher rate = higher)
+     Auth      → max 25 pts
+     Pickup    → max 15 pts                     */
+  const distScore   = Math.max(0, 30 - r.distance * 2.5);
+  const priceScore  = matId && r.rates[matId]
+    ? Math.min(30, (r.rates[matId] / 5))
+    : 15;
+  const authSc      = r.auth === 'CPCB' ? 25 : 14;
+  const pickSc      = r.pickup ? (r.pickupMin <= 5 ? 15 : r.pickupMin <= 15 ? 10 : 6) : 0;
+  return Math.round(distScore + priceScore + authSc + pickSc);
+}
+
+function renderRecyclers(filterMat){
+  activeFilter = filterMat || null;
+
+  /* filter → only recyclers that accept the material */
+  let list = filterMat
+    ? recyclerDB.filter(r => r.accepts.includes(filterMat))
+    : [...recyclerDB];
+
+  /* smart sort */
+  list.sort((a,b) => calcScore(b,filterMat) - calcScore(a,filterMat));
+
+  /* count label */
+  const matName = filterMat
+    ? (matFilterOpts.find(m=>m.id===filterMat)||{label:filterMat}).label
+    : null;
+  document.getElementById('recyclerCount').textContent =
+    list.length + (matName ? ' recyclers accept '+matName : ' recyclers · all materials');
+
+  /* render cards */
+  document.getElementById('recyclerList').innerHTML = list.map((r,i) => {
+    const score   = calcScore(r, filterMat);
+    const isBest  = i === 0;
+    const matRate = filterMat && r.rates[filterMat] ? r.rates[filterMat] : null;
+    const authClr = r.auth==='CPCB' ? '#38bdf8' : '#a78bfa';
+    const matTags = r.accepts.slice(0,6).map(mid=>{
+      const mo = matFilterOpts.find(m=>m.id===mid);
+      const hi = mid === filterMat;
+      return `<span style="background:${hi?'rgba(99,102,241,.25)':'var(--surface)'};border:1px solid ${hi?'rgba(99,102,241,.5)':'var(--border)'};border-radius:16px;padding:3px 9px;font-size:0.68rem;font-weight:700;color:${hi?'#c4b5fd':'var(--soft)'};">${mo?mo.label:mid}</span>`;
+    }).join('') + (r.accepts.length>6?`<span style="font-size:0.68rem;color:var(--muted);font-weight:600;align-self:center;"> +${r.accepts.length-6} more</span>`:'');
+
+    const serviceTags = r.services.map(s=>
+      `<span style="background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.18);border-radius:16px;padding:3px 9px;font-size:0.68rem;font-weight:700;color:#86efac;">✓ ${s}</span>`
+    ).join('');
+
+    return `
+    <div style="background:var(--card2);border:1px solid ${isBest?'rgba(99,102,241,.45)':'var(--border)'};border-radius:16px;padding:15px;margin-bottom:12px;${isBest?'box-shadow:0 0 0 2px rgba(99,102,241,.2);':''}">
+
+      ${isBest?`<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;"><div style="background:var(--accent);color:#fff;font-size:0.65rem;font-weight:900;padding:3px 10px;border-radius:20px;letter-spacing:1px;">⚡ BEST MATCH</div><div style="font-size:0.65rem;color:var(--muted);font-weight:600;">Score: ${score}/100</div></div>`
+      :`<div style="font-size:0.65rem;color:var(--muted);font-weight:600;margin-bottom:8px;">Rank #${i+1} · Score: ${score}/100</div>`}
+
+      <!-- Header -->
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;">
+        <div style="width:50px;height:50px;background:rgba(99,102,241,.12);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">${r.emoji}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:0.95rem;font-weight:900;color:#fff;margin-bottom:3px;">${r.name}</div>
+          <div style="font-size:0.7rem;font-weight:700;color:${authClr};">✅ ${r.authLabel}</div>
+          <div style="font-size:0.7rem;color:var(--muted);font-weight:600;margin-top:2px;">📍 ${r.area}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:1.1rem;font-weight:900;color:#4ade80;">${r.rating}★</div>
+          <div style="font-size:0.7rem;font-weight:800;color:var(--sky);">${r.distance} km</div>
+        </div>
+      </div>
+
+      <!-- Key stats row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        ${matRate?`<div style="background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:10px;text-align:center;"><div style="font-size:0.62rem;font-weight:800;color:var(--muted);letter-spacing:1px;">OFFERED RATE</div><div style="font-size:1.3rem;font-weight:900;color:#4ade80;margin-top:2px;">₹${matRate}<span style="font-size:0.65rem;font-weight:700;color:var(--muted);">/kg</span></div></div>`
+        :`<div style="background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.15);border-radius:10px;padding:10px;text-align:center;"><div style="font-size:0.62rem;font-weight:800;color:var(--muted);letter-spacing:1px;">ACCEPTS</div><div style="font-size:0.85rem;font-weight:800;color:var(--sky);margin-top:4px;">${r.accepts.length} items</div></div>`}
+        <div style="background:${r.pickup?'rgba(99,102,241,.08)':'rgba(244,63,94,.06)'};border:1px solid ${r.pickup?'rgba(99,102,241,.2)':'rgba(244,63,94,.2)'};border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:0.62rem;font-weight:800;color:var(--muted);letter-spacing:1px;">PICKUP</div>
+          <div style="font-size:0.78rem;font-weight:800;color:${r.pickup?'#c4b5fd':'#f43f5e'};margin-top:4px;">${r.pickup?'✅ Available':'❌ Drop-off Only'}</div>
+        </div>
+      </div>
+
+      <!-- Hours & Area -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div style="background:var(--surface);border-radius:10px;padding:10px;">
+          <div style="font-size:0.6rem;font-weight:800;color:var(--muted);letter-spacing:1px;margin-bottom:3px;">⏰ HOURS</div>
+          <div style="font-size:0.75rem;font-weight:700;color:var(--soft);">${r.hours}</div>
+        </div>
+        <div style="background:var(--surface);border-radius:10px;padding:10px;">
+          <div style="font-size:0.6rem;font-weight:800;color:var(--muted);letter-spacing:1px;margin-bottom:3px;">🚛 PICKUP INFO</div>
+          <div style="font-size:0.75rem;font-weight:700;color:var(--soft);">${r.pickupLabel}</div>
+        </div>
+      </div>
+
+      <!-- Service area -->
+      <div style="background:var(--surface);border-radius:10px;padding:10px;margin-bottom:12px;">
+        <div style="font-size:0.6rem;font-weight:800;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">📌 SERVICE AREA</div>
+        <div style="font-size:0.78rem;font-weight:600;color:var(--soft);">${r.serviceArea}</div>
+      </div>
+
+      <!-- Services -->
+      <div style="margin-bottom:12px;">
+        <div style="font-size:0.6rem;font-weight:800;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">🛠 SERVICES OFFERED</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">${serviceTags}</div>
+      </div>
+
+      <!-- Materials accepted -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:0.6rem;font-weight:800;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">📦 ACCEPTS THESE MATERIALS</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">${matTags}</div>
+      </div>
+
+      <!-- Actions -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button onclick="callRecycler('${r.phone}')" class="btn btn-accent" style="padding:12px;font-size:0.85rem;">
+          <i class="fa-solid fa-phone"></i> Call Now
+        </button>
+        <button onclick="selectRecycler('${r.name}')" class="btn" style="padding:12px;font-size:0.85rem;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.3);color:var(--sky);">
+          <i class="fa-solid fa-circle-check"></i> Select
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════
+   MATCH WIZARD
+══════════════════════════════════════════════ */
+let mwSelected = null; // selected material id
+
+function buildMwMats(){
+  const el = document.getElementById('mwMats');
+  if(!el) return;
+  el.innerHTML = matFilterOpts.map(m =>
+    `<button id="mw_${m.id}" onclick="mwSelectMat('${m.id}')"
+      style="background:var(--card2);color:var(--soft);border:1px solid var(--border);
+             border-radius:20px;padding:7px 13px;font-size:0.78rem;font-weight:700;cursor:pointer;
+             transition:all .2s;">${m.label}</button>`
+  ).join('');
+}
+
+function mwSelectMat(id){
+  mwSelected = id;
+  document.querySelectorAll('#mwMats button').forEach(b=>{
+    b.style.background='var(--card2)'; b.style.color='var(--soft)';
+    b.style.border='1px solid var(--border)'; b.style.transform='scale(1)';
+  });
+  const active = document.getElementById('mw_'+id);
+  if(active){
+    active.style.background='var(--accent)'; active.style.color='#fff';
+    active.style.border='1px solid transparent'; active.style.transform='scale(1.05)';
+  }
+  // collapse old results
+  const res = document.getElementById('mwResults');
+  res.style.maxHeight='0'; res.style.marginTop='0';
+}
+
+function mwSyncSlider(val){
+  const ni = document.getElementById('mwKgInput');
+  if(ni) ni.value = val;
+  const sl = document.getElementById('mwSlider');
+  if(sl){
+    const pct = ((val-1)/499)*100;
+    sl.style.background=`linear-gradient(to right,var(--accent) 0%,var(--accent) ${pct}%,rgba(255,255,255,.12) ${pct}%,rgba(255,255,255,.12) 100%)`;
+    sl.style.borderRadius='999px';
+  }
+}
+
+function mwSyncInput(val){
+  const sl = document.getElementById('mwSlider');
+  if(sl){ sl.value=Math.min(val,500); mwSyncSlider(sl.value); }
+}
+
+function runMatch(){
+  const kg = parseInt(document.getElementById('mwKgInput').value) || 50;
+
+  if(!mwSelected){
+    toast('warn','Select a Material','Please tap a material in Step 1 first.');
+    document.getElementById('mwMats').style.animation='none';
+    setTimeout(()=>{ document.getElementById('mwMats').scrollIntoView({behavior:'smooth',block:'center'}); },100);
+    return;
+  }
+
+  const matObj = matFilterOpts.find(m=>m.id===mwSelected);
+  const matLabel = matObj ? matObj.label : mwSelected;
+
+  // Filter recyclers that accept this material, then score & sort
+  let matches = recyclerDB
+    .filter(r => r.accepts.includes(mwSelected))
+    .map(r => ({
+      ...r,
+      score: calcScore(r, mwSelected),
+      rate:  r.rates[mwSelected] || 0,
+      payout: kg * (r.rates[mwSelected] || 0)
+    }))
+    .sort((a,b) => b.score - a.score);
+
+  if(matches.length === 0){
+    toast('warn','No Match Found','No recycler in our list accepts this material yet.');
+    return;
+  }
+
+  // Find max payout to highlight best deal
+  const maxPayout = Math.max(...matches.map(m=>m.payout));
+  const rankMedals = ['🥇','🥈','🥉'];
+
+  const html = `
+    <div style="border-top:1px solid var(--border);margin-top:20px;padding-top:18px;">
+      <div style="font-size:0.65rem;font-weight:900;letter-spacing:1.5px;color:var(--accent);margin-bottom:14px;">
+        STEP 3 · RESULTS FOR ${kg} KG OF ${matLabel.toUpperCase()}
+      </div>
+
+      ${matches.map((r,i)=>{
+        const isBest = i===0;
+        const isHighPay = r.payout===maxPayout && i!==0;
+        return `
+        <div style="background:var(--card2);border:1.5px solid ${isBest?'rgba(99,102,241,.5)':isHighPay?'rgba(74,222,128,.3)':'var(--border)'};
+                    border-radius:16px;padding:15px;margin-bottom:10px;
+                    ${isBest?'box-shadow:0 0 0 3px rgba(99,102,241,.15);':''}">
+
+          <!-- Badge row -->
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <div style="font-size:1.3rem;">${rankMedals[i]||'#'+(i+1)}</div>
+            ${isBest?`<div style="background:var(--accent);color:#fff;font-size:0.65rem;font-weight:900;padding:3px 10px;border-radius:20px;">⚡ BEST MATCH</div>`:''}
+            ${isHighPay?`<div style="background:rgba(74,222,128,.15);color:#4ade80;font-size:0.65rem;font-weight:900;padding:3px 10px;border-radius:20px;border:1px solid rgba(74,222,128,.3);">💰 HIGHEST PAY</div>`:''}
+            ${r.pickup?`<div style="background:rgba(99,102,241,.1);color:#c4b5fd;font-size:0.65rem;font-weight:800;padding:3px 10px;border-radius:20px;">🚚 Pickup Avail.</div>`:`<div style="background:rgba(244,63,94,.08);color:#f43f5e;font-size:0.65rem;font-weight:800;padding:3px 10px;border-radius:20px;">📦 Drop-off Only</div>`}
+            <div style="margin-left:auto;font-size:0.65rem;color:var(--muted);font-weight:600;">Score ${r.score}/100</div>
+          </div>
+
+          <!-- Name row -->
+          <div style="display:flex;align-items:flex-start;gap:11px;margin-bottom:12px;">
+            <div style="font-size:1.5rem;flex-shrink:0;">${r.emoji}</div>
+            <div style="flex:1;">
+              <div style="font-size:0.92rem;font-weight:900;color:#fff;">${r.name}</div>
+              <div style="font-size:0.7rem;font-weight:700;color:${r.auth==='CPCB'?'#38bdf8':'#a78bfa'};margin-top:2px;">✅ ${r.authLabel}</div>
+              <div style="font-size:0.68rem;color:var(--muted);font-weight:600;margin-top:2px;">📍 ${r.area}</div>
+            </div>
+          </div>
+
+          <!-- Key numbers -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+            <div style="background:var(--surface);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:0.58rem;font-weight:800;color:var(--muted);letter-spacing:1px;">DISTANCE</div>
+              <div style="font-size:1rem;font-weight:900;color:var(--sky);margin-top:3px;">${r.distance} km</div>
+            </div>
+            <div style="background:var(--surface);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:0.58rem;font-weight:800;color:var(--muted);letter-spacing:1px;">RATE</div>
+              <div style="font-size:1rem;font-weight:900;color:#f59e0b;margin-top:3px;">₹${r.rate}/kg</div>
+            </div>
+            <div style="background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:0.58rem;font-weight:800;color:var(--muted);letter-spacing:1px;">YOU GET</div>
+              <div style="font-size:1rem;font-weight:900;color:#4ade80;margin-top:3px;">₹${r.payout.toLocaleString('en-IN')}</div>
+            </div>
+          </div>
+
+          <!-- Pickup info + hours -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+            <div style="background:var(--surface);border-radius:10px;padding:9px;">
+              <div style="font-size:0.58rem;font-weight:800;color:var(--muted);letter-spacing:1px;margin-bottom:3px;">⏰ HOURS</div>
+              <div style="font-size:0.72rem;font-weight:700;color:var(--soft);">${r.hours}</div>
+            </div>
+            <div style="background:var(--surface);border-radius:10px;padding:9px;">
+              <div style="font-size:0.58rem;font-weight:800;color:var(--muted);letter-spacing:1px;margin-bottom:3px;">📌 AREA</div>
+              <div style="font-size:0.72rem;font-weight:700;color:var(--soft);">${r.serviceArea.split(',')[0]}…</div>
+            </div>
+          </div>
+
+          <!-- Why recommended (only for rank 1) -->
+          ${isBest?`<div style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:10px;padding:10px;margin-bottom:14px;font-size:0.75rem;color:var(--soft);font-weight:600;line-height:1.6;">
+            💡 <strong style="color:#fff;">Why recommended:</strong> Closest authorized recycler offering pickup with strong payout of ₹${r.payout.toLocaleString('en-IN')} for your ${kg} kg of ${matLabel}.
+          </div>`:''}
+
+          <!-- Actions -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button onclick="callRecycler('${r.phone}')" class="btn btn-accent" style="padding:11px;font-size:0.85rem;">
+              <i class="fa-solid fa-phone"></i> Call Now
+            </button>
+            <button onclick="selectRecycler('${r.name}')" class="btn"
+              style="padding:11px;font-size:0.85rem;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.3);color:var(--sky);">
+              <i class="fa-solid fa-circle-check"></i> Select
+            </button>
+          </div>
+        </div>`;
+      }).join('')}
+
+      <div style="text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;margin-top:4px;padding:10px 0;">
+        ${matches.length} of 5 recyclers accept ${matLabel} · Smart ranked for you
+      </div>
+    </div>`;
+
+  const res = document.getElementById('mwResults');
+  res.innerHTML = html;
+  res.style.maxHeight = '3000px';
+  res.style.marginTop = '4px';
+  setTimeout(()=>res.scrollIntoView({behavior:'smooth',block:'start'}),300);
+  toast('success',`${matches.length} Recyclers Found! 🎯`,`Best match: ${matches[0].name} · ₹${matches[0].payout.toLocaleString('en-IN')} for ${kg} kg`);
+}
+
+function buildMatFilters(){
+  const el = document.getElementById('matFilters');
+  if(!el) return;
+  el.innerHTML = `<button onclick="filterRecycler(null)" id="fAll" style="background:var(--accent);color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:0.75rem;font-weight:800;cursor:pointer;">All</button>`
+  + matFilterOpts.map(m=>
+    `<button onclick="filterRecycler('${m.id}')" id="f_${m.id}" style="background:var(--card2);color:var(--soft);border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;">${m.label}</button>`
+  ).join('');
+}
+
+function filterRecycler(matId){
+  /* highlight active chip */
+  document.querySelectorAll('#matFilters button').forEach(b=>{ b.style.background='var(--card2)';b.style.color='var(--soft)';b.style.border='1px solid var(--border)'; });
+  const active = document.getElementById(matId?'f_'+matId:'fAll');
+  if(active){ active.style.background='var(--accent)';active.style.color='#fff';active.style.border='1px solid transparent'; }
+  renderRecyclers(matId);
+}
+
+/* ── E-WASTE MODULE ── */
+const ewItems = [
+  /* ── HIGH VALUE ── */
+  {id:'pcb',     emoji:'🖥️', name:'PCB / Circuit Board',   min:80,  max:120, unit:'kg', color:'#f43f5e',  tag:'HIGH'},
+  {id:'cpu',     emoji:'⚡', name:'CPU Processor',          min:150, max:250, unit:'kg', color:'#f59e0b',  tag:'HIGH'},
+  {id:'ram',     emoji:'💾', name:'RAM / Memory Sticks',    min:60,  max:90,  unit:'kg', color:'#6366f1',  tag:'HIGH'},
+  {id:'copper',  emoji:'🔩', name:'Copper Wire (stripped)', min:120, max:160, unit:'kg', color:'#f59e0b',  tag:'HIGH'},
+  /* ── MEDIUM VALUE ── */
+  {id:'mobile',  emoji:'📱', name:'Mobile Phones',          min:15,  max:30,  unit:'kg', color:'#38bdf8',  tag:'MED'},
+  {id:'laptop',  emoji:'💻', name:'Laptop / Notebook',      min:10,  max:18,  unit:'kg', color:'#6366f1',  tag:'MED'},
+  {id:'hdd',     emoji:'💿', name:'HDD / Hard Disk',        min:20,  max:35,  unit:'kg', color:'#a78bfa',  tag:'MED'},
+  {id:'cable',   emoji:'🔌', name:'Mixed Cables / Wires',   min:12,  max:20,  unit:'kg', color:'#f59e0b',  tag:'MED'},
+  {id:'motor',   emoji:'⚙️', name:'Motors / Compressors',  min:10,  max:18,  unit:'kg', color:'#a78bfa',  tag:'MED'},
+  {id:'psu',     emoji:'🔋', name:'SMPS / Power Supply',    min:8,   max:15,  unit:'kg', color:'#38bdf8',  tag:'MED'},
+  /* ── STANDARD ── */
+  {id:'comp',    emoji:'🖥️', name:'Desktop Computer (full)',min:6,   max:12,  unit:'kg', color:'#6366f1',  tag:'STD'},
+  {id:'batt',    emoji:'🔋', name:'Li-ion / Lead Battery',  min:5,   max:10,  unit:'kg', color:'#4ade80',  tag:'STD'},
+  {id:'tv',      emoji:'📺', name:'TV / LCD / Monitor',     min:3,   max:7,   unit:'kg', color:'#38bdf8',  tag:'STD'},
+  {id:'printer', emoji:'🖨️', name:'Printer / Scanner',     min:4,   max:8,   unit:'kg', color:'#7c7f9a',  tag:'STD'},
+  {id:'fridge',  emoji:'❄️', name:'AC / Fridge (e-parts)', min:5,   max:10,  unit:'kg', color:'#38bdf8',  tag:'STD'},
+  {id:'plast',   emoji:'🧴', name:'E-Plastic Housing',      min:2,   max:5,   unit:'kg', color:'#7c7f9a',  tag:'STD'},
+];
+let ewQty = {};
+let selRecycler = '';
+let ewReceiptCount = 22;
+
+function initEwaste(){
+  const tagLabels = {HIGH:'🔴 High Value Items', MED:'🟡 Medium Value Items', STD:'🔵 Standard Items'};
+  const tagColors = {HIGH:'rgba(244,63,94,.1)', MED:'rgba(245,158,11,.08)', STD:'rgba(99,102,241,.07)'};
+  const tagBorders= {HIGH:'rgba(244,63,94,.25)', MED:'rgba(245,158,11,.2)', STD:'rgba(99,102,241,.18)'};
+
+  /* ── PRICE BOARD ── */
+  const pb = document.getElementById('ewPriceBoard');
+  if(pb){
+    let html = '';
+    ['HIGH','MED','STD'].forEach(tag => {
+      html += `<div style="font-size:0.65rem;font-weight:800;letter-spacing:1.5px;color:var(--muted);padding:10px 0 6px;">${tagLabels[tag]}</div>`;
+      ewItems.filter(it=>it.tag===tag).forEach(it => {
+        html += `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:12px;background:${tagColors[tag]};border:1px solid ${tagBorders[tag]};margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:11px;">
+            <div style="width:42px;height:42px;border-radius:12px;background:${it.color}20;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">${it.emoji}</div>
+            <div>
+              <div style="font-size:0.9rem;font-weight:800;color:#fff;">${it.name}</div>
+              <div style="font-size:0.68rem;font-weight:600;color:var(--muted);margin-top:2px;">CPCB approved · per kg</div>
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:1.3rem;font-weight:900;color:${it.color};">₹${it.min}–${it.max}</div>
+            <div style="font-size:0.62rem;color:var(--muted);font-weight:700;">per kg</div>
+          </div>
+        </div>`;
+      });
+    });
+    pb.innerHTML = html;
+  }
+
+  /* ── SELL SLIDERS ── */
+  const sl = document.getElementById('ewSliders');
+  if(sl){
+    ewItems.forEach(it=>{ ewQty[it.id]=0; });
+    let shtml = '';
+    ['HIGH','MED','STD'].forEach(tag => {
+      shtml += `<div style="font-size:0.65rem;font-weight:800;letter-spacing:1.5px;color:var(--muted);padding:10px 0 8px;">${tagLabels[tag]}</div>`;
+      ewItems.filter(it=>it.tag===tag).forEach(it => {
+        shtml += `
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:13px;padding:13px;margin-bottom:9px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div style="font-size:0.9rem;font-weight:800;color:#fff;">${it.emoji} ${it.name}</div>
+            <div style="text-align:right;">
+              <div style="font-size:1rem;font-weight:900;color:${it.color};" id="ewv_${it.id}">0 kg</div>
+              <div style="font-size:0.72rem;font-weight:700;color:#4ade80;" id="ewc_${it.id}">₹0</div>
+            </div>
+          </div>
+          <input type="range" class="slider" min="0" max="100" value="0"
+            oninput="updEw('${it.id}',this.value)" style="accent-color:${it.color};">
+          <div style="font-size:0.65rem;color:var(--muted);font-weight:600;margin-top:5px;">Rate: ₹${it.min} – ₹${it.max} per kg</div>
+        </div>`;
+      });
+    });
+    sl.innerHTML = shtml;
+  }
+
+  /* ── RECYCLER FINDER ── */
+  buildMwMats();
+  buildMatFilters();
+  renderRecyclers(null);
+  loadLedger();
+  loadLots();
+}
+
+function updEw(id, val){
+  ewQty[id] = parseInt(val);
+  document.getElementById('ewv_'+id).textContent = val+' kg';
+
+  /* colour the filled track (Chrome/Safari) */
+  const it = ewItems.find(x=>x.id===id);
+  const slEl = document.querySelector('input[oninput*="\''+id+'\'"]');
+  if(slEl){
+    const pct = (parseInt(val)/parseInt(slEl.max))*100;
+    const col  = it ? it.color : 'var(--accent)';
+    slEl.style.background = `linear-gradient(to right,${col} 0%,${col} ${pct}%,rgba(255,255,255,.12) ${pct}%,rgba(255,255,255,.12) 100%)`;
+    slEl.style.borderRadius = '999px';
+  }
+
+  /* per-item cash estimate */
+  if(it){
+    const itemVal = parseInt(val)*((it.min+it.max)/2);
+    const cEl = document.getElementById('ewc_'+id);
+    if(cEl) cEl.textContent = itemVal > 0 ? '₹'+itemVal.toFixed(0)+' est.' : '₹0';
+  }
+  const totalKg  = Object.values(ewQty).reduce((a,b)=>a+b,0);
+  const totalVal = ewItems.reduce((sum,it)=>sum + ewQty[it.id]*((it.min+it.max)/2), 0);
+  document.getElementById('ewEstVal').textContent = totalVal.toFixed(2);
+  document.getElementById('ewEstKg').textContent  = totalKg;
+  document.getElementById('ewEstRec').textContent = selRecycler || '—';
+}
+
+function selectRecycler(name){
+  selRecycler = name;
+  document.getElementById('selRecyclerLbl').textContent = name;
+  document.getElementById('ewEstRec').textContent = name;
+  toast('success','Recycler Selected ✅', name+' chosen. Now set quantities below.');
+}
+
+function callRecycler(num){
+  toast('info','📞 Calling...','Dialing: +91 '+num+'\n(Will work on mobile device)');
+}
+
+/* ══════════════════════════════════════════════
+   EARNINGS LEDGER & DIGITAL RECEIPT SYSTEM
+══════════════════════════════════════════════ */
+const LEDGER_KEY = 'gl_earnings_ledger';
+let ledgerData = [];
+let curLedgerFilter = 'all';
+let selectedPayMode = 'Cash';
+let selectedPayStatus = 'Paid';
+
+function setPayMode(mode){
+  selectedPayMode = mode;
+  const cBtn = document.getElementById('btnPayCash');
+  const uBtn = document.getElementById('btnPayUpi');
+  if(cBtn) cBtn.classList.toggle('active', mode==='Cash');
+  if(uBtn) uBtn.classList.toggle('active', mode==='UPI');
+}
+
+function setPayStatus(status){
+  selectedPayStatus = status;
+  const pBtn = document.getElementById('btnStatPaid');
+  const peBtn = document.getElementById('btnStatPending');
+  if(pBtn) pBtn.classList.toggle('active', status==='Paid');
+  if(peBtn) peBtn.classList.toggle('active', status==='Pending');
+}
+
+// Starter financial records matching user's spec
+const starterLedger = [
+  {
+    id: 'EW-0023',
+    date: '08 Sep 2026',
+    shortDate: '8 Sept',
+    time: '11:30 AM',
+    recycler: 'EcoSafe Recyclers Pvt Ltd',
+    items: [{ id:'pcb', name:'PCB / Circuit Board', emoji:'🖥️', kg:40, rate:112.5, total:4500 }],
+    summary: '🖥️ PCB Board (40 kg)',
+    totalKg: 40,
+    amount: 4500,
+    payMode: 'Cash',
+    status: 'Paid'
+  },
+  {
+    id: 'EW-0022',
+    date: '07 Sep 2026',
+    shortDate: '7 Sept',
+    time: '03:15 PM',
+    recycler: 'GreenCycle Tech Solutions',
+    items: [{ id:'cable', name:'Mixed Cables / Wires', emoji:'🔌', kg:115, rate:17.4, total:2000 }],
+    summary: '🔌 Mixed Cables (115 kg)',
+    totalKg: 115,
+    amount: 2000,
+    payMode: 'UPI',
+    status: 'Paid'
+  },
+  {
+    id: 'EW-0021',
+    date: '05 Sep 2026',
+    shortDate: '5 Sept',
+    time: '04:45 PM',
+    recycler: 'NexaWaste Management',
+    items: [{ id:'batt', name:'Li-ion / Lead Battery', emoji:'🔋', kg:185, rate:8.1, total:1500 }],
+    summary: '🔋 Battery (185 kg)',
+    totalKg: 185,
+    amount: 1500,
+    payMode: 'Cash',
+    status: 'Pending'
+  }
+];
+
+function loadLedger(){
+  try {
+    const raw = localStorage.getItem(LEDGER_KEY);
+    if(raw && raw !== '[]'){
+      ledgerData = JSON.parse(raw);
+    } else {
+      ledgerData = [...starterLedger];
+      saveLedger();
+    }
+  } catch(e){
+    ledgerData = [...starterLedger];
+  }
+  renderLedger(curLedgerFilter);
+}
+
+function saveLedger(){
+  try {
+    localStorage.setItem(LEDGER_KEY, JSON.stringify(ledgerData));
+  } catch(e){}
+}
+
+function filterLedger(flt){
+  curLedgerFilter = flt;
+  const bAll = document.getElementById('lfAll');
+  const bPaid = document.getElementById('lfPaid');
+  const bPen = document.getElementById('lfPending');
+  if(bAll){ bAll.style.background = flt==='all' ? 'var(--accent)' : 'var(--card2)'; bAll.style.color = flt==='all' ? '#fff' : 'var(--soft)'; }
+  if(bPaid){ bPaid.style.background = flt==='Paid' ? 'var(--accent)' : 'var(--card2)'; bPaid.style.color = flt==='Paid' ? '#fff' : 'var(--soft)'; }
+  if(bPen){ bPen.style.background = flt==='Pending' ? 'var(--accent)' : 'var(--card2)'; bPen.style.color = flt==='Pending' ? '#fff' : 'var(--soft)'; }
+  renderLedger(flt);
+}
+
+function markLedgerPaid(id){
+  const rec = ledgerData.find(r => r.id === id);
+  if(rec){
+    rec.status = 'Paid';
+    saveLedger();
+    renderLedger(curLedgerFilter);
+    toast('success', 'Payment Marked as Received! 💵', `₹${rec.amount.toLocaleString('en-IN')} updated to Paid.`);
+  }
+}
+
+function clearLedgerHistory(){
+  if(confirm('Reset earnings history to default records?')){
+    ledgerData = [...starterLedger];
+    saveLedger();
+    renderLedger('all');
+    toast('info', 'Ledger Reset', 'Default financial records restored.');
+  }
+}
+
+function renderLedger(flt){
+  const el = document.getElementById('ewLedgerList');
+  if(!el) return;
+
+  // Compute summary values across all data
+  let sumPaid = 0, sumPending = 0, sumKg = 0;
+  let countPaid = 0, countPending = 0;
+
+  ledgerData.forEach(r => {
+    sumKg += (Number(r.totalKg) || 0);
+    if(r.status === 'Paid'){
+      sumPaid += (Number(r.amount) || 0);
+      countPaid++;
+    } else {
+      sumPending += (Number(r.amount) || 0);
+      countPending++;
+    }
+  });
+
+  const pEl = document.getElementById('ledSumPaid');
+  const peEl = document.getElementById('ledSumPending');
+  const kgEl = document.getElementById('ledSumKg');
+  if(pEl) pEl.textContent = '₹' + sumPaid.toLocaleString('en-IN');
+  if(peEl) peEl.textContent = '₹' + sumPending.toLocaleString('en-IN');
+  if(kgEl) kgEl.textContent = sumKg.toLocaleString('en-IN') + ' kg';
+
+  const cAll = document.getElementById('cntAll');
+  const cPaid = document.getElementById('cntPaid');
+  const cPending = document.getElementById('cntPending');
+  if(cAll) cAll.textContent = ledgerData.length;
+  if(cPaid) cPaid.textContent = countPaid;
+  if(cPending) cPending.textContent = countPending;
+
+  // Filter list
+  const filtered = flt === 'all' ? ledgerData : ledgerData.filter(r => r.status === flt);
+
+  if(filtered.length === 0){
+    el.innerHTML = `<div style="text-align:center;padding:28px 10px;color:var(--muted);font-weight:600;font-size:0.85rem;">
+      <i class="fa-solid fa-folder-open" style="font-size:1.8rem;opacity:.4;margin-bottom:8px;display:block;"></i>
+      No ${flt==='all'?'':flt} records found in ledger.
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = filtered.map(r => {
+    const isPaid = r.status === 'Paid';
+    return `
+    <div class="ledger-item">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;">
+        <div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:0.75rem;font-weight:900;color:var(--sky);">${r.id}</span>
+            <span style="font-size:0.72rem;color:var(--muted);font-weight:600;">· ${r.shortDate || r.date}</span>
+          </div>
+          <div style="font-size:0.95rem;font-weight:800;color:#fff;margin-top:2px;">${r.summary || 'E-Waste Materials'}</div>
+          <div style="font-size:0.72rem;color:var(--muted);font-weight:600;margin-top:2px;">🏢 ${r.recycler}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:1.18rem;font-weight:900;color:#4ade80;">₹${Number(r.amount).toLocaleString('en-IN')}</div>
+          <div style="font-size:0.68rem;color:var(--muted);font-weight:700;">${r.totalKg} kg total</div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid rgba(255,255,255,.05);flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="badge-mode">${r.payMode === 'UPI' ? '📱 UPI' : '💵 Cash'}</span>
+          <span class="badge-status ${isPaid ? 'paid' : 'pending'}">${isPaid ? '✅ Paid' : '⏳ Pending'}</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:6px;">
+          ${!isPaid ? `<button onclick="markLedgerPaid('${r.id}')" class="btn" style="padding:5px 10px;font-size:0.72rem;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);color:#4ade80;border-radius:8px;"><i class="fa-solid fa-check"></i> Mark Paid</button>` : ''}
+          <button onclick="openReceiptModal('${r.id}')" class="btn btn-ghost" style="padding:5px 11px;font-size:0.72rem;border-radius:8px;">
+            <i class="fa-solid fa-receipt"></i> View Receipt
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openReceiptModal(id){
+  const rec = ledgerData.find(r => r.id === id);
+  if(!rec) return;
+
+  document.getElementById('rmTitle').textContent = `Receipt #${rec.id}`;
+  document.getElementById('rmDate').textContent = `${rec.date} · ${rec.time || 'Official Handover'}`;
+
+  const isPaid = rec.status === 'Paid';
+  const shopName = (document.getElementById('shopIn') && document.getElementById('shopIn').value) || 'Green Link Shop';
+
+  const itemsHtml = (rec.items && rec.items.length)
+    ? rec.items.map(it => `
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.1);font-size:0.8rem;">
+        <div>${it.emoji || '📦'} ${it.name} <span style="color:var(--muted);">(${it.kg} kg × ₹${it.rate}/kg)</span></div>
+        <div style="font-weight:700;color:#fff;">₹${Math.round(it.total || (it.kg*it.rate)).toLocaleString('en-IN')}</div>
+      </div>`).join('')
+    : `<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.8rem;">
+        <div>${rec.summary}</div>
+        <div style="font-weight:700;color:#fff;">₹${Number(rec.amount).toLocaleString('en-IN')}</div>
+       </div>`;
+
+  document.getElementById('rmBody').innerHTML = `
+    <div class="receipt-paper">
+      <div style="text-align:center;border-bottom:1px dashed rgba(255,255,255,.2);padding-bottom:12px;margin-bottom:12px;">
+        <div style="font-size:1.1rem;font-weight:900;letter-spacing:1px;color:#fff;">GREEN LINK RECYCLE</div>
+        <div style="font-size:0.68rem;color:var(--muted);margin-top:2px;">Government Authorized E-Waste Channel</div>
+        <div style="font-size:0.75rem;font-weight:800;color:#4ade80;margin-top:4px;">VERIFIED FORMAL HANDOVER</div>
+      </div>
+
+      <div style="font-size:0.75rem;margin-bottom:12px;line-height:1.5;">
+        <div><strong>Recycler:</strong> ${rec.recycler}</div>
+        <div><strong>Collector:</strong> ${shopName} (Partner)</div>
+        <div><strong>Handover Date:</strong> ${rec.date}</div>
+        <div><strong>Payment Mode:</strong> ${rec.payMode === 'UPI' ? '📱 UPI / Digital' : '💵 Cash Payment'}</div>
+      </div>
+
+      <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:8px;margin-bottom:12px;">
+        <div style="font-size:0.68rem;font-weight:800;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">ITEMIZED BREAKDOWN</div>
+        ${itemsHtml}
+      </div>
+
+      <div style="border-top:1px solid rgba(255,255,255,.2);padding-top:10px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:0.82rem;font-weight:700;color:var(--soft);margin-bottom:4px;">
+          <span>Total Weight:</span>
+          <span>${rec.totalKg} kg</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:1.15rem;font-weight:900;color:#4ade80;">
+          <span>Total Payout:</span>
+          <span>₹${Number(rec.amount).toLocaleString('en-IN')}</span>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:10px 0 4px;border-top:1px dashed rgba(255,255,255,.2);">
+        <span style="display:inline-block;padding:4px 14px;border-radius:20px;font-size:0.82rem;font-weight:900;letter-spacing:1.5px;
+          ${isPaid ? 'background:rgba(74,222,128,.15);border:1.5px solid #4ade80;color:#4ade80;' : 'background:rgba(245,158,11,.15);border:1.5px solid #f59e0b;color:#f59e0b;'}">
+          ${isPaid ? 'PAID &amp; SETTLED' : 'PAYMENT PENDING'}
+        </span>
+        <div style="font-size:0.62rem;color:var(--muted);margin-top:8px;">
+          ✅ CPCB EPR Certificate generated · 0% informal burning
+        </div>
+      </div>
+    </div>`;
+
+  const m = document.getElementById('receiptModal');
+  if(m) m.style.display = 'flex';
+}
+
+function closeReceiptModal(){
+  const m = document.getElementById('receiptModal');
+  if(m) m.style.display = 'none';
+}
+
+function genReceipt(){
+  const totalKg  = Object.values(ewQty).reduce((a,b)=>a+b,0);
+  const totalVal = ewItems.reduce((sum,it)=>sum + ewQty[it.id]*((it.min+it.max)/2), 0);
+
+  if(totalKg === 0){ toast('warn','Nothing to Submit','Use the sliders to set quantities first.'); return; }
+  if(!selRecycler){ toast('warn','No Recycler Selected','Please select an authorized recycler above.'); return; }
+
+  const now = new Date();
+  const dated = now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  const shortDate = now.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  const timeStr = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+
+  const activeItems = ewItems.filter(it => (ewQty[it.id] || 0) > 0).map(it => ({
+    id: it.id,
+    name: it.name,
+    emoji: it.emoji,
+    kg: ewQty[it.id],
+    rate: Math.round((it.min + it.max)/2),
+    total: Math.round(ewQty[it.id] * ((it.min + it.max)/2))
+  }));
+
+  const receiptId = 'EW-' + String(ledgerData.length + 24).padStart(4, '0');
+
+  const newRecord = {
+    id: receiptId,
+    date: dated,
+    shortDate: shortDate,
+    time: timeStr,
+    timestamp: Date.now(),
+    recycler: selRecycler,
+    items: activeItems,
+    summary: activeItems.map(i => `${i.emoji} ${i.name.split('/')[0].trim()} (${i.kg}kg)`).join(', '),
+    totalKg: totalKg,
+    amount: Math.round(totalVal),
+    payMode: selectedPayMode,
+    status: selectedPayStatus
+  };
+
+  // Add to beginning of ledger
+  ledgerData.unshift(newRecord);
+  saveLedger();
+  renderLedger('all');
+
+  // Reset sliders
+  ewItems.forEach(it => { ewQty[it.id] = 0; });
+  document.querySelectorAll('#ewSliders input[type=range]').forEach(s => {
+    s.value = 0;
+    const it = ewItems.find(x => s.getAttribute('oninput').includes(x.id));
+    if(it){
+      s.style.background = 'var(--border)';
+      const vEl = document.getElementById('ewv_' + it.id);
+      const cEl = document.getElementById('ewc_' + it.id);
+      if(vEl) vEl.textContent = '0 kg';
+      if(cEl) cEl.textContent = '₹0';
+    }
+  });
+  document.getElementById('ewEstVal').textContent = '0.00';
+  document.getElementById('ewEstKg').textContent = '0';
+
+  toast('success', 'Receipt Generated & Saved! 📋', `Receipt #${receiptId} saved to your Earnings Ledger.`);
+
+  // Open the official receipt modal immediately
+  openReceiptModal(receiptId);
+}
+
+/* ══════════════════════════════════════════════
+   DIGITAL LOT TRACKING SYSTEM
+══════════════════════════════════════════════ */
+const LOTS_STORAGE_KEY = 'gl_digital_lots';
+let lotsData = [];
+let curLotFilter = 'all';
+
+// Preset photos for quick lot creation
+const lotPresetPhotos = [
+  'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&auto=format&fit=crop&q=80', // PCBs
+  'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&auto=format&fit=crop&q=80', // Cables & Copper
+  'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&auto=format&fit=crop&q=80', // Batteries
+  'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&auto=format&fit=crop&q=80'  // Phones
+];
+let selectedLotPhoto = lotPresetPhotos[0];
+
+// Starter sample lots matching user specification
+const starterLots = [
+  {
+    id: 'LOT-2026-00125',
+    material: '🖥️ PCB Circuit Boards & Server Chips',
+    weight: 45,
+    location: 'Dharavi Hub, Sector 4, Mumbai',
+    date: '11 Sep 2026',
+    time: '10:15 AM',
+    estVal: 5200,
+    quotedPrice: 5450,
+    recycler: 'EcoSafe Recyclers Pvt Ltd',
+    status: 'In Transit',
+    photo: lotPresetPhotos[0],
+    sealNo: 'SEAL-IN-9821'
+  },
+  {
+    id: 'LOT-2026-00124',
+    material: '🔌 Mixed Insulated Cables & Heavy Copper Wire',
+    weight: 120,
+    location: 'Kurla Scrap Yard, Unit 8, Mumbai',
+    date: '10 Sep 2026',
+    time: '04:30 PM',
+    estVal: 14400,
+    quotedPrice: 15200,
+    recycler: 'GreenCycle Tech Solutions',
+    status: 'Received',
+    photo: lotPresetPhotos[1],
+    sealNo: 'SEAL-IN-9810'
+  },
+  {
+    id: 'LOT-2026-00123',
+    material: '🔋 Mixed Li-ion Batteries & Smartphone Units',
+    weight: 85,
+    location: 'Andheri West Market, Mumbai',
+    date: '08 Sep 2026',
+    time: '02:00 PM',
+    estVal: 4800,
+    quotedPrice: 5000,
+    recycler: 'NexaWaste Management',
+    status: 'Recycled',
+    photo: lotPresetPhotos[2],
+    sealNo: 'SEAL-IN-9799'
+  }
+];
+
+function loadLots(){
+  try {
+    const raw = localStorage.getItem(LOTS_STORAGE_KEY);
+    if(raw && raw !== '[]'){
+      lotsData = JSON.parse(raw);
+    } else {
+      lotsData = [...starterLots];
+      saveLots();
+    }
+  } catch(e){
+    lotsData = [...starterLots];
+  }
+  renderLots(curLotFilter);
+  updateNewLotIdPreview();
+}
+
+function saveLots(){
+  try {
+    localStorage.setItem(LOTS_STORAGE_KEY, JSON.stringify(lotsData));
+  } catch(e){}
+}
+
+function updateNewLotIdPreview(){
+  const pEl = document.getElementById('newLotIdPreview');
+  if(pEl){
+    const nextNum = String(lotsData.length + 126).padStart(5, '0');
+    pEl.textContent = `LOT-2026-${nextNum}`;
+  }
+}
+
+function toggleLotCreateCard(){
+  const card = document.getElementById('lotCreateCard');
+  if(!card) return;
+  const isHidden = card.style.display === 'none' || !card.style.display;
+  card.style.display = isHidden ? 'block' : 'none';
+  if(isHidden){
+    updateNewLotIdPreview();
+    card.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+}
+
+function setLotPresetPhoto(idx, btn){
+  selectedLotPhoto = lotPresetPhotos[idx] || lotPresetPhotos[0];
+  const img = document.getElementById('lotPhotoImg');
+  if(img) img.src = selectedLotPhoto;
+  document.querySelectorAll('#lotCreateCard .pay-opt-btn').forEach(b => {
+    if(b.textContent.includes('PCBs') || b.textContent.includes('Cables') || b.textContent.includes('Batteries') || b.textContent.includes('Phones')){
+      b.classList.remove('active');
+    }
+  });
+  if(btn) btn.classList.add('active');
+}
+
+function handleLotPhotoUpload(event){
+  const file = event.target.files && event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    selectedLotPhoto = e.target.result;
+    const img = document.getElementById('lotPhotoImg');
+    if(img) img.src = selectedLotPhoto;
+    toast('info', 'Photo Loaded 📸', 'Collection image attached to lot.');
+  };
+  reader.readAsDataURL(file);
+}
+
+function setLotWeight(val){
+  const wIn = document.getElementById('newLotWeight');
+  if(wIn) {
+    wIn.value = val;
+    document.getElementById('newLotWeightLbl').textContent = val + ' kg';
+    recalcLotVal();
+  }
+  document.querySelectorAll('#lotCreateCard button').forEach(b => {
+    if(b.textContent.endsWith('kg')) {
+      b.classList.toggle('active', b.textContent === val + 'kg');
+    }
+  });
+}
+
+function recalcLotVal(){
+  const w = parseFloat(document.getElementById('newLotWeight').value) || 0;
+  const estVal = Math.round(w * 115);
+  const quotedVal = Math.round(w * 121);
+  const eIn = document.getElementById('newLotEstVal');
+  const qIn = document.getElementById('newLotQuotedVal');
+  if(eIn) eIn.value = estVal;
+  if(qIn) qIn.value = quotedVal;
+}
+
+function detectLotGPS(){
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const coords = `${pos.coords.latitude.toFixed(4)}° N, ${pos.coords.longitude.toFixed(4)}° E`;
+        const lIn = document.getElementById('newLotLocation');
+        if(lIn) lIn.value = `Verified Yard (GPS: ${coords})`;
+        toast('success', 'GPS Tagged 📍', coords);
+      },
+      () => {
+        const lIn = document.getElementById('newLotLocation');
+        if(lIn) lIn.value = 'Dharavi Sector 4 Scrap Yard, Mumbai';
+        toast('info', 'Location Set 📍', 'Scrap yard depot coordinates added.');
+      }
+    );
+  } else {
+    toast('info', 'Location Set 📍', 'Scrap yard depot coordinates added.');
+  }
+}
+
+function submitNewLot(){
+  const material = document.getElementById('newLotMaterial').value.trim() || 'Mixed E-Waste Batch';
+  const weight = parseFloat(document.getElementById('newLotWeight').value) || 10;
+  const location = document.getElementById('newLotLocation').value.trim() || 'Central Collection Depot, Mumbai';
+  const estVal = parseFloat(document.getElementById('newLotEstVal').value) || 0;
+  const quotedPrice = parseFloat(document.getElementById('newLotQuotedVal').value) || estVal;
+  const recycler = document.getElementById('newLotRecycler').value;
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+  const timeStr = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+
+  const nextNum = String(lotsData.length + 126).padStart(5, '0');
+  const lotId = `LOT-2026-${nextNum}`;
+
+  const newLot = {
+    id: lotId,
+    material: material,
+    weight: weight,
+    location: location,
+    date: dateStr,
+    time: timeStr,
+    estVal: Math.round(estVal),
+    quotedPrice: Math.round(quotedPrice),
+    recycler: recycler,
+    status: 'Tagged',
+    photo: selectedLotPhoto,
+    sealNo: 'SEAL-IN-' + Math.floor(1000 + Math.random() * 9000)
+  };
+
+  lotsData.unshift(newLot);
+  saveLots();
+  renderLots(curLotFilter);
+  toggleLotCreateCard();
+
+  toast('success', `Digital Lot Generated! 🧾`, `${lotId} (${weight} kg) sealed & tagged.`);
+  openLotModal(lotId);
+}
+
+function filterLots(flt){
+  curLotFilter = flt;
+  const btns = {
+    all: document.getElementById('ltfAll'),
+    Tagged: document.getElementById('ltfTagged'),
+    'In Transit': document.getElementById('ltfTransit'),
+    Received: document.getElementById('ltfReceived'),
+    Recycled: document.getElementById('ltfRecycled')
+  };
+  Object.keys(btns).forEach(k => {
+    if(btns[k]){
+      const isActive = k === flt;
+      btns[k].style.background = isActive ? 'var(--accent)' : 'var(--card2)';
+      btns[k].style.color = isActive ? '#fff' : 'var(--soft)';
+    }
+  });
+  renderLots(flt);
+}
+
+function updateLotStatus(id, newStatus){
+  const lot = lotsData.find(l => l.id === id);
+  if(!lot) return;
+  lot.status = newStatus;
+  saveLots();
+  renderLots(curLotFilter);
+  toast('success', 'Status Updated 🚚', `${id} is now: ${newStatus}`);
+}
+
+function resetLotsToDefault(){
+  if(confirm('Reset digital lots to sample tracking data?')){
+    lotsData = [...starterLots];
+    saveLots();
+    renderLots('all');
+    toast('info', 'Lots Reset', 'Sample tracking lots restored.');
+  }
+}
+
+function copyLotId(id){
+  navigator.clipboard.writeText(id).then(() => {
+    toast('success', 'Copied to Clipboard! 📋', id);
+  }).catch(() => {
+    toast('info', 'Lot ID', id);
+  });
+}
+
+function renderLots(flt){
+  const el = document.getElementById('lotList');
+  if(!el) return;
+
+  // Compute top strip counts
+  let totalLots = lotsData.length;
+  let totalKg = 0;
+  let totalVal = 0;
+  let cntTagged = 0, cntTransit = 0, cntReceived = 0, cntRecycled = 0;
+
+  lotsData.forEach(l => {
+    totalKg += (Number(l.weight) || 0);
+    totalVal += (Number(l.quotedPrice) || Number(l.estVal) || 0);
+    if(l.status === 'Tagged') cntTagged++;
+    else if(l.status === 'In Transit') cntTransit++;
+    else if(l.status === 'Received') cntReceived++;
+    else if(l.status === 'Recycled') cntRecycled++;
+  });
+
+  const cCount = document.getElementById('lotStatCount');
+  const cKg = document.getElementById('lotStatKg');
+  const cVal = document.getElementById('lotStatVal');
+  if(cCount) cCount.textContent = totalLots;
+  if(cKg) cKg.textContent = totalKg.toLocaleString('en-IN') + ' kg';
+  if(cVal) cVal.textContent = '₹' + totalVal.toLocaleString('en-IN');
+
+  const cAll = document.getElementById('cntLotAll');
+  const cTag = document.getElementById('cntLotTagged');
+  const cTran = document.getElementById('cntLotTransit');
+  const cRec = document.getElementById('cntLotReceived');
+  const cCycl = document.getElementById('cntLotRecycled');
+  if(cAll) cAll.textContent = totalLots;
+  if(cTag) cTag.textContent = cntTagged;
+  if(cTran) cTran.textContent = cntTransit;
+  if(cRec) cRec.textContent = cntReceived;
+  if(cCycl) cCycl.textContent = cntRecycled;
+
+  const filtered = flt === 'all' ? lotsData : lotsData.filter(l => l.status === flt);
+
+  if(filtered.length === 0){
+    el.innerHTML = `
+      <div style="text-align:center;padding:36px 12px;color:var(--muted);font-weight:600;">
+        <i class="fa-solid fa-boxes-stacked" style="font-size:2rem;opacity:.3;margin-bottom:10px;display:block;"></i>
+        No digital lots found in category: <strong>${flt}</strong>.
+      </div>`;
+    return;
+  }
+
+  const stepKeys = ['Tagged', 'In Transit', 'Received', 'Recycled'];
+
+  el.innerHTML = filtered.map(lot => {
+    const curStepIdx = stepKeys.indexOf(lot.status);
+    const statusClass = lot.status === 'Tagged' ? 'lot-status-tagged' :
+                        lot.status === 'In Transit' ? 'lot-status-transit' :
+                        lot.status === 'Received' ? 'lot-status-received' : 'lot-status-recycled';
+
+    const statusEmoji = lot.status === 'Tagged' ? '🟡' :
+                        lot.status === 'In Transit' ? '🚚' :
+                        lot.status === 'Received' ? '🏭' : '♻️';
+
+    return `
+    <div class="lot-card">
+      <!-- Top header: Lot ID + Status -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px;">
+        <div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="lot-id-badge">${lot.id}</span>
+            <button onclick="copyLotId('${lot.id}')" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem;" title="Copy Lot ID">
+              <i class="fa-regular fa-copy"></i>
+            </button>
+          </div>
+          <div style="font-size:0.95rem;font-weight:900;color:#fff;margin-top:5px;">${lot.material}</div>
+        </div>
+        <span class="lot-status-pill ${statusClass}">${statusEmoji} ${lot.status}</span>
+      </div>
+
+      <!-- Main Info Row: Photo + Weight + Location + Financials -->
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px;">
+        <img src="${lot.photo}" class="lot-photo-thumb" alt="Lot Image" onclick="openLotModal('${lot.id}')" style="cursor:pointer;" title="Tap to view barcode tag">
+        <div style="flex:1;min-width:0;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
+            <div style="background:var(--surface);border-radius:8px;padding:6px 8px;">
+              <div style="font-size:0.58rem;font-weight:800;color:var(--muted);">⚖️ WEIGHT</div>
+              <div style="font-size:0.92rem;font-weight:900;color:var(--sky);">${lot.weight} kg</div>
+            </div>
+            <div style="background:var(--surface);border-radius:8px;padding:6px 8px;">
+              <div style="font-size:0.58rem;font-weight:800;color:var(--muted);">💰 QUOTED</div>
+              <div style="font-size:0.92rem;font-weight:900;color:#4ade80;">₹${Number(lot.quotedPrice).toLocaleString('en-IN')}</div>
+            </div>
+          </div>
+          <div style="font-size:0.72rem;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            📍 ${lot.location}
+          </div>
+          <div style="font-size:0.72rem;color:var(--soft);font-weight:600;margin-top:2px;">
+            🏭 ${lot.recycler}
+          </div>
+        </div>
+      </div>
+
+      <!-- Tracking Timeline Step Journey -->
+      <div class="lot-step-track">
+        <div class="lot-step-node ${curStepIdx >= 0 ? (curStepIdx > 0 ? 'done' : 'active') : ''}">
+          <div class="lot-step-dot">${curStepIdx > 0 ? '✓' : '1'}</div>
+          <span class="lot-step-lbl">Tagged</span>
+        </div>
+        <div class="lot-step-node ${curStepIdx >= 1 ? (curStepIdx > 1 ? 'done' : 'active') : ''}">
+          <div class="lot-step-dot">${curStepIdx > 1 ? '✓' : '2'}</div>
+          <span class="lot-step-lbl">In Transit</span>
+        </div>
+        <div class="lot-step-node ${curStepIdx >= 2 ? (curStepIdx > 2 ? 'done' : 'active') : ''}">
+          <div class="lot-step-dot">${curStepIdx > 2 ? '✓' : '3'}</div>
+          <span class="lot-step-lbl">Received</span>
+        </div>
+        <div class="lot-step-node ${curStepIdx >= 3 ? 'done' : ''}">
+          <div class="lot-step-dot">${curStepIdx >= 3 ? '✓' : '4'}</div>
+          <span class="lot-step-lbl">Recycled</span>
+        </div>
+      </div>
+
+      <!-- Action Footer: Update Status & View Printable Tag -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);gap:8px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:0.68rem;color:var(--muted);font-weight:700;">Status:</span>
+          <select onchange="updateLotStatus('${lot.id}', this.value)" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:0.72rem;padding:4px 8px;font-family:inherit;outline:none;">
+            <option value="Tagged" ${lot.status==='Tagged'?'selected':''}>🟡 Tagged</option>
+            <option value="In Transit" ${lot.status==='In Transit'?'selected':''}>🚚 In Transit</option>
+            <option value="Received" ${lot.status==='Received'?'selected':''}>🏭 Received</option>
+            <option value="Recycled" ${lot.status==='Recycled'?'selected':''}>♻️ Recycled</option>
+          </select>
+        </div>
+
+        <button onclick="openLotModal('${lot.id}')" class="btn btn-ghost" style="padding:6px 12px;font-size:0.75rem;border-radius:8px;display:flex;align-items:center;gap:5px;">
+          <i class="fa-solid fa-barcode"></i> View Tracking Tag
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openLotModal(id){
+  const lot = lotsData.find(l => l.id === id);
+  if(!lot) return;
+
+  const mId = document.getElementById('lmLotId');
+  const mDate = document.getElementById('lmDate');
+  if(mId) mId.textContent = lot.id;
+  if(mDate) mDate.textContent = `${lot.date} · ${lot.time || '10:00 AM'}`;
+
+  const body = document.getElementById('lmBody');
+  if(!body) return;
+
+  // Fake lines for barcode visual
+  const barcodeLines = Array.from({length: 46}, (_, i) => {
+    const w = (i % 3 === 0 || i % 7 === 0) ? '3px' : (i % 2 === 0) ? '1.5px' : '1px';
+    const mr = (i % 5 === 0) ? '3px' : '1px';
+    return `<div style="background:#000;width:${w};margin-right:${mr};height:100%;"></div>`;
+  }).join('');
+
+  body.innerHTML = `
+    <!-- Physical Sack Tag Container -->
+    <div style="background:#ffffff;color:#0f172a;border-radius:14px;padding:18px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.3);">
+      
+      <!-- Tag Header -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #0f172a;padding-bottom:10px;margin-bottom:12px;">
+        <div>
+          <div style="font-size:0.68rem;font-weight:900;letter-spacing:1px;color:#475569;">GOVERNMENT AUTHORIZED E-WASTE LOT</div>
+          <div style="font-size:1.3rem;font-weight:900;letter-spacing:0.5px;color:#0f172a;font-family:monospace;">${lot.id}</div>
+          <div style="font-size:0.68rem;color:#64748b;font-weight:600;">Seal No: <strong>${lot.sealNo || 'SEAL-2026-X'}</strong> · CPCB Compliant</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:1.4rem;">♻️</div>
+          <span style="display:inline-block;background:#0f172a;color:#fff;font-size:0.6rem;font-weight:900;padding:2px 6px;border-radius:4px;margin-top:2px;">TAGGED</span>
+        </div>
+      </div>
+
+      <!-- Visual Barcode Representation -->
+      <div style="text-align:center;margin-bottom:14px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;padding:10px;">
+        <div style="display:flex;justify-content:center;height:38px;align-items:stretch;margin-bottom:4px;">
+          ${barcodeLines}
+        </div>
+        <div style="font-family:monospace;font-size:0.75rem;font-weight:800;letter-spacing:3px;color:#334155;">* ${lot.id} *</div>
+      </div>
+
+      <!-- Photo & Core Metadata Grid -->
+      <div style="display:flex;gap:12px;margin-bottom:12px;">
+        <img src="${lot.photo}" style="width:84px;height:84px;border-radius:10px;object-fit:cover;border:1px solid #cbd5e1;" alt="Lot Image">
+        <div style="flex:1;font-size:0.78rem;line-height:1.5;">
+          <div><strong style="color:#0f172a;">Material:</strong> ${lot.material}</div>
+          <div><strong style="color:#0f172a;">Total Weight:</strong> <span style="font-size:0.95rem;font-weight:900;color:#0284c7;">${lot.weight} kg</span></div>
+          <div><strong style="color:#0f172a;">Quoted Price:</strong> <span style="font-size:0.95rem;font-weight:900;color:#16a34a;">₹${Number(lot.quotedPrice).toLocaleString('en-IN')}</span></div>
+        </div>
+      </div>
+
+      <!-- Details List -->
+      <div style="background:#f1f5f9;border-radius:8px;padding:10px;font-size:0.74rem;margin-bottom:12px;line-height:1.6;">
+        <div>📍 <strong>Origin Location:</strong> ${lot.location}</div>
+        <div>🏭 <strong>Designated Recycler:</strong> ${lot.recycler}</div>
+        <div>📅 <strong>Registration Date:</strong> ${lot.date} · ${lot.time || '10:00 AM'}</div>
+        <div>⚡ <strong>Current Lifecycle:</strong> <span style="font-weight:800;color:#4338ca;">${lot.status}</span></div>
+      </div>
+
+      <!-- Warning Footer for formal handling -->
+      <div style="border-top:1px solid #cbd5e1;padding-top:8px;text-align:center;font-size:0.62rem;color:#64748b;font-weight:600;">
+        ⚠️ STRICTLY PROHIBITED TO BURN OR DUMP · TRACKED UNDER CPCB EPR DIRECTIVE
+      </div>
+    </div>`;
+
+  const modal = document.getElementById('lotModal');
+  if(modal) modal.style.display = 'flex';
+}
+
+function closeLotModal(){
+  const modal = document.getElementById('lotModal');
+  if(modal) modal.style.display = 'none';
+}
+</script>
+</body>
+</html>

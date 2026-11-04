@@ -1,0 +1,12 @@
+{
+  "name": "green-link",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Green Link waste identification backend",
+  "scripts": {
+    "start": "node --env-file=.env server.js"
+  },
+  "engines": {
+    "node": ">=20.6.0"
+  }
+}

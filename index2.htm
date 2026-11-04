@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Link | Sustainable Retail Command Center</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #070d18;
+            --sidebar-bg: rgba(8, 15, 30, 0.97);
+            --glass-panel: rgba(12, 22, 42, 0.75);
+            --glass-border: rgba(32, 201, 151, 0.2);
+            --cyan: #20c997;
+            --cyan-dim: rgba(32, 201, 151, 0.15);
+            --cyan-glow: rgba(32, 201, 151, 0.4);
+            --blue: #4dabf7;
+            --blue-dim: rgba(77, 171, 247, 0.15);
+            --gold: #ffd43b;
+            --gold-dim: rgba(255, 212, 59, 0.15);
+            --red: #ff6b6b;
+            --purple: #cc5de8;
+            --text-main: #e8f4f0;
+            --text-muted: #5a7a6e;
+            --text-soft: #8aada0;
+            --sidebar-w: 270px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--cyan-dim); border-radius: 2px; }
+
+        body {
+            font-family: 'Syne', sans-serif;
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(ellipse at 0% 0%, rgba(32, 201, 151, 0.08) 0%, transparent 55%),
+                radial-gradient(ellipse at 100% 0%, rgba(77, 171, 247, 0.07) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 100%, rgba(204, 93, 232, 0.05) 0%, transparent 55%);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* PARTICLE CANVAS */
+        #particleCanvas {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+            opacity: 0.4;
+        }
+
+        /* SPLASH */
+        #splash-screen {
+            position: fixed; inset: 0;
+            background: var(--bg-dark); z-index: 9999;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.9s ease-out, visibility 0.9s;
+        }
+        .splash-logo {
+            font-family: 'Syne', sans-serif; font-weight: 800;
+            font-size: 3.5rem; color: #fff; letter-spacing: -2px;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .splash-logo i { color: var(--cyan); filter: drop-shadow(0 0 20px var(--cyan)); }
+        .splash-tagline { font-family: 'Space Mono', monospace; font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; letter-spacing: 3px; text-transform: uppercase; }
+        .loading-bar { width: 220px; height: 2px; background: rgba(255,255,255,0.07); border-radius: 1px; margin-top: 28px; overflow: hidden; }
+        .loading-progress { width: 0%; height: 100%; background: linear-gradient(90deg, var(--cyan), var(--blue)); animation: loadApp 1.8s cubic-bezier(0.4,0,0.2,1) forwards; }
+        @keyframes loadApp { to { width: 100%; } }
+
+        /* TOAST NOTIFICATIONS */
+        #toast-container {
+            position: fixed; top: 24px; right: 24px; z-index: 9998;
+            display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+        }
+        .toast {
+            background: rgba(12, 22, 42, 0.97);
+            border: 1px solid var(--cyan-dim);
+            border-left: 3px solid var(--cyan);
+            border-radius: 10px;
+            padding: 14px 18px;
+            min-width: 280px; max-width: 340px;
+            display: flex; align-items: flex-start; gap: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(32,201,151,0.05);
+            pointer-events: all;
+            animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+            backdrop-filter: blur(20px);
+        }
+        .toast.success { border-left-color: var(--cyan); }
+        .toast.error   { border-left-color: var(--red); }
+        .toast.warn    { border-left-color: var(--gold); }
+        .toast.info    { border-left-color: var(--blue); }
+        .toast-icon    { font-size: 1rem; margin-top: 2px; }
+        .toast.success .toast-icon { color: var(--cyan); }
+        .toast.error   .toast-icon { color: var(--red); }
+        .toast.warn    .toast-icon { color: var(--gold); }
+        .toast.info    .toast-icon { color: var(--blue); }
+        .toast-body    { flex: 1; }
+        .toast-title   { font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 3px; }
+        .toast-msg     { font-size: 0.75rem; color: var(--text-soft); line-height: 1.4; font-family: 'Space Mono', monospace; }
+        .toast-close   { color: var(--text-muted); cursor: pointer; font-size: 0.8rem; margin-top: 2px; transition: color 0.2s; }
+        .toast-close:hover { color: #fff; }
+        .toast.out     { animation: toastOut 0.25s ease-in forwards; }
+        @keyframes toastIn  { from { opacity: 0; transform: translateX(30px) scale(0.95); } to { opacity: 1; transform: translateX(0) scale(1); } }
+        @keyframes toastOut { from { opacity: 1; transform: translateX(0); }               to { opacity: 0; transform: translateX(30px); } }
+
+        /* PRICE TICKER BAR */
+        .price-ticker-bar {
+            width: 100%; background: rgba(8,15,30,0.9);
+            border-bottom: 1px solid rgba(32,201,151,0.1);
+            padding: 6px 0; overflow: hidden;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem; z-index: 20;
+            flex-shrink: 0;
+            display: flex; align-items: center;
+        }
+        .ticker-inner {
+            display: flex; gap: 0;
+            animation: tickerScroll 28s linear infinite;
+            white-space: nowrap;
+        }
+        .ticker-item {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 0 28px;
+            border-right: 1px solid rgba(255,255,255,0.06);
+        }
+        .ticker-name { color: var(--text-muted); }
+        .ticker-price { color: #fff; font-weight: 700; }
+        .ticker-up   { color: var(--cyan); }
+        .ticker-down { color: var(--red); }
+        @keyframes tickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            border-right: 1px solid rgba(32,201,151,0.08);
+            display: flex; flex-direction: column;
+            padding: 28px 16px;
+            z-index: 50;
+            backdrop-filter: blur(30px);
+            transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+            position: relative;
+        }
+        .brand {
+            font-size: 1.6rem; font-weight: 800; color: #fff;
+            margin-bottom: 36px;
+            display: flex; align-items: center; gap: 10px;
+            letter-spacing: -1px;
+        }
+        .brand-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; color: #fff;
+            box-shadow: 0 0 20px var(--cyan-glow);
+        }
+        .nav-section-label {
+            font-size: 0.6rem; font-weight: 700; letter-spacing: 2.5px;
+            color: var(--text-muted); text-transform: uppercase;
+            padding: 0 12px; margin: 16px 0 6px;
+        }
+        .nav-item {
+            padding: 11px 14px; margin-bottom: 3px;
+            border-radius: 10px; color: var(--text-soft);
+            cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; gap: 12px;
+            font-size: 0.875rem; font-weight: 600;
+            border: 1px solid transparent;
+            position: relative; overflow: hidden;
+        }
+        .nav-item i { width: 16px; text-align: center; font-size: 0.85rem; }
+        .nav-item:hover { background: rgba(32,201,151,0.06); color: var(--text-main); }
+        .nav-item.active {
+            background: var(--cyan-dim);
+            color: var(--cyan);
+            border-color: rgba(32,201,151,0.2);
+        }
+        .nav-item.active::before {
+            content: ''; position: absolute; left: 0; top: 20%; height: 60%; width: 3px;
+            background: var(--cyan); border-radius: 0 2px 2px 0;
+        }
+        .nav-badge {
+            margin-left: auto; background: var(--cyan);
+            color: #070d18; font-size: 0.6rem; font-weight: 800;
+            padding: 2px 7px; border-radius: 20px;
+        }
+        .sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.04); }
+        .pickup-card {
+            padding: 14px 16px;
+            border: 1px solid rgba(32,201,151,0.15);
+            background: linear-gradient(135deg, rgba(32,201,151,0.05), rgba(77,171,247,0.05));
+            border-radius: 12px; margin-bottom: 12px;
+        }
+        .pickup-label { font-size: 0.65rem; color: var(--cyan); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+        .pickup-name  { font-size: 0.9rem; font-weight: 700; color: #fff; }
+        .pickup-time  { font-size: 0.75rem; color: var(--text-soft); font-family: 'Space Mono', monospace; margin-top: 2px; }
+        .user-row {
+            display: flex; align-items: center; gap: 10px;
+            cursor: pointer; padding: 10px; border-radius: 10px; transition: 0.2s;
+        }
+        .user-row:hover { background: rgba(255,255,255,0.04); }
+        .user-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 800; color: #070d18;
+            flex-shrink: 0;
+        }
+        .user-name { font-size: 0.85rem; font-weight: 700; color: #fff; }
+        .user-role { font-size: 0.7rem; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+
+        /* LAYOUT */
+        .app-right {
+            flex: 1; display: flex; flex-direction: column;
+            overflow: hidden; position: relative; z-index: 1;
+        }
+        .main-content { flex: 1; padding: 28px 36px; overflow-y: auto; }
+        .mobile-header {
+            display: none; justify-content: space-between; align-items: center;
+            padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .menu-btn { font-size: 1.3rem; color: var(--cyan); cursor: pointer; }
+
+        /* TOP BAR */
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 24px; flex-wrap: wrap; gap: 16px;
+        }
+        .page-title h1 {
+            font-size: 2rem; font-weight: 800;
+            letter-spacing: -1px; color: #fff; line-height: 1.1;
+        }
+        .page-title p { color: var(--text-soft); font-size: 0.85rem; font-family: 'Space Mono', monospace; margin-top: 4px; }
+        
+        /* Removed wallet-row styles */
+
+        /* CO2 COUNTER */
+        .co2-banner {
+            width: 100%; padding: 10px 20px;
+            background: linear-gradient(90deg, rgba(32,201,151,0.07), rgba(77,171,247,0.07));
+            border: 1px solid rgba(32,201,151,0.12);
+            border-radius: 12px; margin-bottom: 22px;
+            display: flex; align-items: center; gap: 20px;
+            flex-wrap: wrap;
+        }
+        .co2-item {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .co2-icon { font-size: 1.1rem; }
+        .co2-val { font-size: 1.4rem; font-weight: 800; color: #fff; font-family: 'Space Mono', monospace; line-height: 1; }
+        .co2-lbl { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; }
+        .co2-divider { width: 1px; height: 36px; background: rgba(255,255,255,0.06); }
+
+        /* GRID */
+        .dashboard-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 18px; padding-bottom: 40px;
+        }
+        .col-1 { grid-column: span 1; }
+        .col-2 { grid-column: span 2; }
+        .col-3 { grid-column: span 3; }
+        .col-4 { grid-column: span 4; }
+        .row-2 { grid-row: span 2; }
+        .hidden { display: none !important; }
+        .view-section { animation: fadeUp 0.4s ease-out; }
+
+        /* CARD */
+        .card {
+            background: var(--glass-panel);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px; padding: 22px;
+            backdrop-filter: blur(20px);
+            transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+            position: relative; overflow: hidden;
+        }
+        .card::before {
+            content: ''; position: absolute; inset: 0; border-radius: 16px;
+            background: radial-gradient(circle at 100% 0%, rgba(32,201,151,0.03) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .card:hover {
+            border-color: rgba(32,201,151,0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(32,201,151,0.05);
+        }
+        .card-title {
+            font-size: 0.65rem; font-weight: 700; letter-spacing: 2.5px;
+            text-transform: uppercase; color: var(--text-muted);
+            margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+            font-family: 'Space Mono', monospace;
+        }
+        .card-title i { color: var(--cyan); font-size: 0.7rem; }
+
+        /* IMPACT ORB */
+        .orb-wrapper { display: flex; flex-direction: column; align-items: center; gap: 0; }
+        .eco-orb {
+            width: 150px; height: 150px; border-radius: 50%;
+            border: 1.5px dashed rgba(32,201,151,0.3);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: relative; cursor: pointer;
+        }
+        .eco-orb::before {
+            content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: var(--blue); border-bottom-color: var(--cyan);
+            animation: orbSpin 8s linear infinite;
+        }
+        .eco-orb::after {
+            content: ''; position: absolute; width: 80%; height: 80%; border-radius: 50%;
+            border: 1px dashed rgba(77,171,247,0.15);
+        }
+        .orb-icon { font-size: 1rem; color: var(--cyan); margin-bottom: 6px; }
+        .orb-score { font-size: 3rem; font-weight: 800; color: #fff; line-height: 1; font-family: 'Space Mono', monospace; }
+        .orb-tier { font-size: 0.65rem; letter-spacing: 3px; color: var(--cyan); font-family: 'Space Mono', monospace; margin-top: 4px; }
+
+        .stat-micro-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; width: 100%;
+        }
+        .stat-micro {
+            background: rgba(255,255,255,0.03); padding: 10px 12px;
+            border-radius: 10px; border: 1px solid rgba(255,255,255,0.04);
+            display: flex; align-items: center; gap: 10px;
+            transition: border-color 0.2s;
+        }
+        .stat-micro:hover { border-color: rgba(32,201,151,0.15); }
+        .stat-micro i { font-size: 1rem; }
+        .sm-val { font-size: 1rem; font-weight: 800; color: #fff; line-height: 1; font-family: 'Space Mono', monospace; }
+        .sm-lbl { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+
+        /* GOAL RING */
+        .goal-ring-wrap { position: relative; width: 110px; height: 110px; margin: 0 auto; }
+        svg.progress-ring circle { transition: stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1); transform: rotate(-90deg); transform-origin: 50% 50%; }
+        .goal-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .goal-pct { font-size: 1.4rem; font-weight: 800; color: #fff; font-family: 'Space Mono', monospace; }
+        .goal-sub { font-size: 0.6rem; color: var(--text-muted); margin-top: 2px; }
+
+        /* ACHIEVEMENTS */
+        .badges-row { display: flex; gap: 12px; justify-content: center; margin-top: 8px; }
+        .badge-item { display: flex; flex-direction: column; align-items: center; gap: 6px; opacity: 0.35; transition: 0.25s; cursor: default; }
+        .badge-item.unlocked { opacity: 1; }
+        .badge-item.unlocked:hover { transform: scale(1.1); }
+        .badge-icon-wrap {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: rgba(255,212,59,0.08);
+            border: 1px solid rgba(255,212,59,0.25);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; color: var(--gold);
+        }
+        .unlocked .badge-icon-wrap { box-shadow: 0 0 15px rgba(255,212,59,0.15); }
+        .badge-name { font-size: 0.6rem; color: var(--text-muted); text-align: center; letter-spacing: 0.5px; font-family: 'Space Mono', monospace; }
+
+        /* IOT BINS */
+        .bin-row { margin-bottom: 16px; }
+        .bin-row:last-child { margin-bottom: 0; }
+        .bin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.85rem; }
+        .bin-pct { font-family: 'Space Mono', monospace; font-size: 0.8rem; font-weight: 700; }
+        .bin-track { height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+        .bin-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+        .bin-alert { font-size: 0.7rem; color: var(--red); margin-top: 4px; font-family: 'Space Mono', monospace; }
+
+        /* ACTIVITY LOG */
+        .log-entry {
+            display: flex; align-items: center; gap: 14px;
+            padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .log-entry:last-child { border-bottom: none; }
+        .log-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .log-time { margin-left: auto; font-size: 0.7rem; color: var(--text-muted); font-family: 'Space Mono', monospace; white-space: nowrap; }
+
+        /* LEADERBOARD */
+        .lb-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px; border-radius: 10px;
+            margin-bottom: 6px; transition: background 0.2s;
+            cursor: default;
+        }
+        .lb-row:hover { background: rgba(255,255,255,0.03); }
+        .lb-row.me { background: rgba(32,201,151,0.07); border: 1px solid rgba(32,201,151,0.15); }
+        .lb-rank {
+            width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+            background: rgba(255,255,255,0.07);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 800; font-family: 'Space Mono', monospace;
+        }
+        .lb-rank.gold   { background: var(--gold); color: #070d18; }
+        .lb-rank.silver { background: #adb5bd; color: #070d18; }
+        .lb-rank.bronze { background: #cd7f32; color: #fff; }
+        .lb-avatar {
+            width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; font-weight: 800; color: #070d18;
+        }
+        .lb-name  { font-size: 0.85rem; font-weight: 700; flex: 1; }
+        .lb-score { font-size: 0.8rem; font-family: 'Space Mono', monospace; color: var(--cyan); font-weight: 700; }
+        .lb-kg    { font-size: 0.7rem; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+
+        /* CHALLENGES */
+        .challenge-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px; padding: 14px 16px;
+            margin-bottom: 10px; transition: border-color 0.2s;
+        }
+        .challenge-card:hover { border-color: rgba(32,201,151,0.2); }
+        .ch-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .ch-title { font-size: 0.875rem; font-weight: 700; color: #fff; }
+        .ch-reward {
+            font-size: 0.7rem; font-weight: 700;
+            color: var(--gold); font-family: 'Space Mono', monospace;
+            background: rgba(255,212,59,0.1);
+            padding: 3px 8px; border-radius: 20px;
+        }
+        .ch-desc { font-size: 0.75rem; color: var(--text-soft); margin-bottom: 10px; line-height: 1.5; }
+        .ch-progress { height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+        .ch-fill { height: 100%; border-radius: 2px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
+        .ch-foot { display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.68rem; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+
+        /* INVENTORY */
+        .inv-item { margin-bottom: 20px; }
+        .inv-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.875rem; font-weight: 600; }
+        .inv-kg { font-family: 'Space Mono', monospace; color: var(--cyan); font-size: 0.8rem; }
+        .inv-slider {
+            width: 100%; -webkit-appearance: none; height: 4px;
+            background: rgba(255,255,255,0.08); border-radius: 2px; outline: none; cursor: pointer;
+        }
+        .inv-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 16px; height: 16px;
+            border-radius: 50%; background: var(--cyan); cursor: pointer;
+            box-shadow: 0 0 8px var(--cyan-glow); border: 2px solid var(--bg-dark);
+            transition: transform 0.1s;
+        }
+        .inv-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        .inv-estimate {
+            margin-top: 28px; padding: 16px;
+            background: rgba(32,201,151,0.04);
+            border: 1px solid rgba(32,201,151,0.1);
+            border-radius: 12px;
+        }
+        .est-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.875rem; }
+        .est-val { font-family: 'Space Mono', monospace; font-weight: 700; }
+        .confirm-btn {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, var(--cyan), #17a589);
+            border: none; border-radius: 10px;
+            color: #070d18; font-family: 'Syne', sans-serif;
+            font-weight: 800; font-size: 0.9rem; cursor: pointer;
+            letter-spacing: 0.5px; transition: all 0.2s;
+        }
+        .confirm-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--cyan-glow); }
+
+        /* MARKET */
+        .market-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .product-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 14px; padding: 14px; text-align: center;
+            display: flex; flex-direction: column; transition: all 0.25s;
+        }
+        .product-card:hover {
+            border-color: rgba(255,212,59,0.3);
+            background: rgba(255,212,59,0.03);
+            transform: translateY(-2px);
+        }
+        .prod-img {
+            width: 100%; height: 130px; border-radius: 10px;
+            overflow: hidden; margin-bottom: 12px;
+            background: rgba(255,255,255,0.03);
+        }
+        .prod-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+        .product-card:hover .prod-img img { transform: scale(1.08); }
+        .prod-name { font-size: 0.875rem; font-weight: 700; color: #fff; margin-bottom: 6px; }
+        .prod-price { font-size: 0.8rem; font-weight: 800; color: var(--gold); font-family: 'Space Mono', monospace; margin-bottom: 10px; }
+        .prod-stock { font-size: 0.65rem; color: var(--text-muted); margin-bottom: 10px; font-family: 'Space Mono', monospace; }
+        .buy-btn {
+            width: 100%; padding: 9px;
+            background: transparent; border: 1px solid var(--gold);
+            color: var(--gold); border-radius: 8px;
+            font-weight: 800; cursor: pointer;
+            font-family: 'Syne', sans-serif; font-size: 0.8rem;
+            transition: all 0.15s; margin-top: auto;
+        }
+        .buy-btn:hover { background: var(--gold); color: #070d18; }
+
+        /* LOGISTICS MAP */
+        .map-container {
+            width: 100%; height: 280px;
+            border-radius: 14px; position: relative; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            background-color: rgba(8,15,28,0.8);
+            background-image:
+                linear-gradient(rgba(32,201,151,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(32,201,151,0.04) 1px, transparent 1px);
+            background-size: 36px 36px;
+        }
+        .map-route {
+            position: absolute; top: 50%; left: 8%; width: 84%; height: 1.5px;
+            background: linear-gradient(90deg, var(--cyan-dim), var(--cyan), var(--cyan-dim));
+            transform: translateY(-50%);
+        }
+        .map-truck {
+            position: absolute; top: 50%; left: 8%;
+            transform: translate(-50%, -50%); color: var(--cyan); font-size: 1.3rem;
+            filter: drop-shadow(0 0 8px var(--cyan));
+            animation: truckMove 10s linear infinite;
+        }
+        .map-point {
+            position: absolute; top: 50%; transform: translate(-50%, -50%);
+            width: 10px; height: 10px; border-radius: 50%;
+        }
+        .point-start { left: 8%; background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+        .point-end   { left: 92%; background: var(--blue); box-shadow: 0 0 10px var(--blue); }
+        .map-label {
+            position: absolute; font-size: 0.65rem;
+            font-family: 'Space Mono', monospace; color: var(--text-soft);
+            background: rgba(8,15,28,0.8); padding: 4px 8px; border-radius: 6px;
+        }
+
+        /* PICKUP SCHEDULER */
+        .scheduler-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            gap: 6px; margin-top: 14px;
+        }
+        .cal-day-header { font-size: 0.65rem; text-align: center; color: var(--text-muted); font-family: 'Space Mono', monospace; padding: 4px; }
+        .cal-day {
+            aspect-ratio: 1; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.78rem; font-family: 'Space Mono', monospace; font-weight: 700;
+            cursor: pointer; transition: all 0.15s;
+            border: 1px solid transparent;
+            color: var(--text-soft);
+        }
+        .cal-day:hover { background: rgba(32,201,151,0.1); color: #fff; }
+        .cal-day.today { border-color: rgba(32,201,151,0.4); color: var(--cyan); }
+        .cal-day.scheduled { background: var(--cyan-dim); color: var(--cyan); border-color: rgba(32,201,151,0.3); }
+        .cal-day.empty { cursor: default; opacity: 0; }
+        .cal-day.past { opacity: 0.3; cursor: default; }
+
+        /* MODALS */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(4,9,20,0.85); backdrop-filter: blur(8px);
+            z-index: 1000; display: none; justify-content: center; align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: #0d1a2e; border: 1px solid rgba(32,201,151,0.2);
+            padding: 28px; border-radius: 20px; width: 420px;
+            box-shadow: 0 0 60px rgba(32,201,151,0.08);
+            animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+        .close-modal { cursor: pointer; color: var(--text-muted); transition: color 0.2s; }
+        .close-modal:hover { color: #fff; }
+        .form-group { margin-bottom: 14px; }
+        .form-label { display: block; font-size: 0.7rem; color: var(--text-muted); font-family: 'Space Mono', monospace; margin-bottom: 6px; letter-spacing: 1px; }
+        .form-input {
+            width: 100%; padding: 10px 12px;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px; color: #fff; outline: none; font-family: 'Syne', sans-serif;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus { border-color: rgba(32,201,151,0.4); }
+
+        /* SCANNER */
+        .scanner-overlay {
+            position: fixed; inset: 0; background: #070d18; z-index: 2000;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .scan-window {
+            width: 280px; height: 280px; border-radius: 18px; position: relative; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .scan-line {
+            width: 100%; height: 2px; background: var(--red); box-shadow: 0 0 8px var(--red);
+            position: absolute; top: 0; animation: scanAnim 2s ease-in-out infinite; z-index: 10;
+        }
+        #scannerVideo { width: 100%; height: 100%; object-fit: cover; }
+        .scan-corner { position: absolute; width: 36px; height: 36px; border-style: solid; border-color: var(--cyan); z-index: 10; }
+        .tl { top: 0; left: 0; border-width: 3px 0 0 3px; border-top-left-radius: 18px; }
+        .tr { top: 0; right: 0; border-width: 3px 3px 0 0; border-top-right-radius: 18px; }
+        .bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; border-bottom-left-radius: 18px; }
+        .br { bottom: 0; right: 0; border-width: 0 3px 3px 0; border-bottom-right-radius: 18px; }
+
+        /* SUPPORT FAB */
+        .support-fab {
+            position: fixed; bottom: 28px; right: 28px;
+            width: 52px; height: 52px; background: var(--cyan); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.2rem; color: #070d18; cursor: pointer;
+            box-shadow: 0 8px 24px var(--cyan-glow); z-index: 900;
+            transition: transform 0.25s, box-shadow 0.25s;
+        }
+        .support-fab:hover { transform: scale(1.1); box-shadow: 0 12px 32px var(--cyan-glow); }
+        .chat-window {
+            position: fixed; bottom: 90px; right: 28px;
+            width: 310px; height: 380px;
+            background: rgba(12,22,42,0.97); border: 1px solid rgba(32,201,151,0.2);
+            border-radius: 18px; z-index: 900; display: none; flex-direction: column;
+            overflow: hidden; backdrop-filter: blur(20px);
+            box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+        }
+        .chat-header { background: var(--cyan); padding: 14px 16px; color: #070d18; font-weight: 800; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+        .chat-body { flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .chat-msg { padding: 8px 12px; border-radius: 10px; max-width: 82%; font-size: 0.82rem; line-height: 1.5; }
+        .msg-bot  { background: rgba(255,255,255,0.07); color: var(--text-main); align-self: flex-start; }
+        .msg-user { background: rgba(32,201,151,0.2); color: #fff; align-self: flex-end; border: 1px solid rgba(32,201,151,0.2); }
+        .chat-input { padding: 10px 14px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 8px; align-items: center; }
+        .chat-field { flex: 1; background: transparent; border: none; color: #fff; outline: none; font-family: 'Syne', sans-serif; font-size: 0.85rem; }
+
+        /* ANIMATIONS */
+        @keyframes fadeUp    { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes orbSpin   { 100% { transform: rotate(360deg); } }
+        @keyframes goldSpin  { 100% { transform: rotate(360deg); } }
+        @keyframes truckMove { 0%,2%{left:8%;} 50%{left:92%;} 50.01%{left:8%;opacity:0;} 52%{opacity:1;} 100%{left:50%;} }
+        @keyframes scanAnim  { 0%,100%{top:0;} 50%{top:100%;} }
+        @keyframes countUp   { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+
+        /* RESPONSIVE */
+        @media (max-width: 1100px) {
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+            .col-4, .col-3, .col-2 { grid-column: span 2; }
+            .col-1 { grid-column: span 1; }
+            .market-grid { grid-template-columns: repeat(2, 1fr); }
+            .sidebar { position: fixed; left: -100%; height: 100%; box-shadow: 10px 0 40px rgba(0,0,0,0.5); }
+            .sidebar.active { left: 0; }
+            .mobile-header { display: flex; }
+            .main-content { padding: 20px; }
+        }
+        @media (max-width: 640px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .col-1, .col-2, .col-3, .col-4 { grid-column: span 1; }
+            .market-grid { grid-template-columns: 1fr; }
+            .co2-banner { flex-direction: column; gap: 12px; align-items: flex-start; }
+            .co2-divider { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="particleCanvas"></canvas>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- SPLASH -->
+<div id="splash-screen">
+    <div class="splash-logo">
+        <div class="brand-icon"><i class="fa-solid fa-link"></i></div>
+        Green Link
+    </div>
+    <div class="splash-tagline">Sustainable Retail Command Center</div>
+    <div class="loading-bar"><div class="loading-progress"></div></div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay" id="profileModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 style="font-size:1.1rem;">Settings & Profile</h3>
+            <i class="fa-solid fa-xmark close-modal" onclick="toggleProfile()"></i>
+        </div>
+        <div style="text-align:center;margin-bottom:20px;">
+            <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--blue));margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:#070d18;">GL</div>
+            <div style="font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--cyan);margin-top:8px;">VERIFIED RECYCLER</div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">SHOP NAME</label>
+            <input type="text" class="form-input" id="shopNameInput" value="Green Link Shop">
+        </div>
+        <div class="form-group">
+            <label class="form-label">LOCATION</label>
+            <input type="text" class="form-input" value="District 9, Cyber City" disabled style="opacity:0.4;">
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+            <span style="font-size:0.875rem;">Push Notifications</span>
+            <i class="fa-solid fa-toggle-on" style="color:var(--cyan);font-size:1.4rem;cursor:pointer;"></i>
+        </div>
+        <button onclick="saveProfile()" style="width:100%;padding:12px;background:var(--cyan);border:none;border-radius:8px;color:#070d18;font-weight:800;margin-top:20px;cursor:pointer;font-family:'Syne',sans-serif;">Save Changes</button>
+    </div>
+</div>
+
+<!-- SCANNER -->
+<div class="scanner-overlay" id="scannerOverlay">
+    <div style="color:#fff;margin-bottom:18px;font-size:1rem;font-family:'Space Mono',monospace;letter-spacing:1px;">IDENTIFY WASTE FROM A PHOTO</div>
+    <div class="scan-window">
+        <div class="scan-line"></div>
+        <video id="scannerVideo" autoplay playsinline></video>
+        <div class="scan-corner tl"></div><div class="scan-corner tr"></div>
+        <div class="scan-corner bl"></div><div class="scan-corner br"></div>
+    </div>
+    <button onclick="closeScanner()" style="margin-top:28px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:10px 28px;border-radius:30px;cursor:pointer;font-family:'Syne',sans-serif;">Cancel</button>
+</div>
+
+<!-- SUPPORT CHAT -->
+<div class="support-fab" onclick="toggleChat()"><i class="fa-solid fa-headset"></i></div>
+<div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+        <span>Green Link Support</span>
+        <i class="fa-solid fa-xmark" onclick="toggleChat()" style="cursor:pointer;"></i>
+    </div>
+    <div class="chat-body" id="chatBody">
+        <div class="chat-msg msg-bot">Hello! How can I help you today? 🌿</div>
+        <div class="chat-msg msg-bot">Ask me about recycling rates, pickups, or reward redemptions.</div>
+    </div>
+    <div class="chat-input">
+        <input type="text" class="chat-field" placeholder="Type a message..." id="chatInput" onkeypress="handleChat(event)">
+        <i class="fa-solid fa-paper-plane" style="color:var(--cyan);cursor:pointer;" onclick="sendChat()"></i>
+    </div>
+</div>
+
+<!-- MOBILE HEADER -->
+<div class="mobile-header">
+    <div class="brand" style="font-size:1.3rem;"><div class="brand-icon" style="width:28px;height:28px;font-size:0.75rem;"><i class="fa-solid fa-link"></i></div> Green Link</div>
+    <div class="menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></div>
+</div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+    <div class="brand">
+        <div class="brand-icon"><i class="fa-solid fa-link"></i></div>
+        Green Link
+    </div>
+
+    <div class="nav-section-label">Main</div>
+    <div class="nav-item active" onclick="switchView('dashboard', this)"><i class="fa-solid fa-chart-line"></i> Dashboard</div>
+    <div class="nav-item" onclick="switchView('inventory', this)"><i class="fa-solid fa-recycle"></i> Recyclables</div>
+    <div class="nav-item" onclick="switchView('market', this)"><i class="fa-solid fa-store"></i> Eco-Market</div>
+
+    <div class="nav-section-label">Operations</div>
+    <div class="nav-item" onclick="switchView('logistics', this)"><i class="fa-solid fa-truck-fast"></i> Logistics</div>
+    <div class="nav-item" onclick="switchView('challenges', this)">
+        <i class="fa-solid fa-trophy"></i> Challenges
+        <span class="nav-badge">3</span>
+    </div>
+    <div class="nav-item" onclick="switchView('leaderboard', this)"><i class="fa-solid fa-ranking-star"></i> Leaderboard</div>
+
+    <div class="sidebar-footer">
+        <div class="pickup-card">
+            <div class="pickup-label"><i class="fa-solid fa-clock"></i> Next Pickup</div>
+            <div class="pickup-name">Green-Farm Logistics</div>
+            <div class="pickup-time">Tomorrow @ 08:00 AM</div>
+        </div>
+        <div class="user-row" onclick="toggleProfile()">
+            <div class="user-avatar">GL</div>
+            <div>
+                <div class="user-name" id="sidebarName">Green Link Shop</div>
+                <div class="user-role">View Profile →</div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- APP RIGHT -->
+<div class="app-right">
+    <!-- PRICE TICKER -->
+    <div class="price-ticker-bar">
+        <div class="ticker-inner" id="tickerInner"></div>
+    </div>
+
+    <main class="main-content">
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <div class="page-title">
+                <h1 id="pageHeader">Overview</h1>
+                <p id="pageSubheader">Welcome back, Partner.</p>
+            </div>
+            <!-- Wallet removed from here -->
+        </div>
+
+        <!-- CO2 LIVE COUNTER -->
+        <div class="co2-banner" id="co2Banner">
+            <div class="co2-item">
+                <i class="fa-solid fa-cloud co2-icon" style="color:var(--cyan);"></i>
+                <div>
+                    <div class="co2-val" id="co2Counter">0.00</div>
+                    <div class="co2-lbl">kg CO₂ Saved</div>
+                </div>
+            </div>
+            <div class="co2-divider"></div>
+            <div class="co2-item">
+                <i class="fa-solid fa-tree co2-icon" style="color:#69db7c;"></i>
+                <div>
+                    <div class="co2-val" id="treesCounter">0</div>
+                    <div class="co2-lbl">Trees Equivalent</div>
+                </div>
+            </div>
+            <div class="co2-divider"></div>
+            <div class="co2-item">
+                <i class="fa-solid fa-car co2-icon" style="color:var(--blue);"></i>
+                <div>
+                    <div class="co2-val" id="kmCounter">0</div>
+                    <div class="co2-lbl">km Driving Offset</div>
+                </div>
+            </div>
+            <div class="co2-divider"></div>
+            <div class="co2-item">
+                <i class="fa-solid fa-bolt co2-icon" style="color:var(--gold);"></i>
+                <div>
+                    <div class="co2-val" id="kwCounter">0</div>
+                    <div class="co2-lbl">kWh Energy Saved</div>
+                </div>
+            </div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
+                <span style="width:7px;height:7px;border-radius:50%;background:var(--cyan);animation:pulse 2s infinite;display:inline-block;"></span>
+                <span style="font-size:0.65rem;color:var(--text-muted);font-family:'Space Mono',monospace;">LIVE</span>
+            </div>
+        </div>
+
+        <!-- ═══ DASHBOARD VIEW ═══ -->
+        <div id="view-dashboard" class="dashboard-grid view-section">
+            <div class="card col-2 row-2">
+                <div class="card-title"><i class="fa-solid fa-leaf"></i> Impact Score</div>
+                <div class="orb-wrapper">
+                    <div class="eco-orb" id="ecoOrb">
+                        <i class="orb-icon fa-solid fa-leaf"></i>
+                        <div class="orb-score" id="impactScore">94</div>
+                        <div class="orb-tier">ELITE TIER</div>
+                    </div>
+                    <div class="stat-micro-grid">
+                        <div class="stat-micro"><i class="fa-solid fa-tree" style="color:var(--cyan);"></i><div><div class="sm-val">12</div><div class="sm-lbl">Trees Saved</div></div></div>
+                        <div class="stat-micro"><i class="fa-solid fa-bolt" style="color:var(--gold);"></i><div><div class="sm-val">850kWh</div><div class="sm-lbl">Energy</div></div></div>
+                        <div class="stat-micro"><i class="fa-solid fa-droplet" style="color:var(--blue);"></i><div><div class="sm-val">2.4kL</div><div class="sm-lbl">Water</div></div></div>
+                        <div class="stat-micro"><i class="fa-solid fa-recycle" style="color:var(--purple);"></i><div><div class="sm-val">98%</div><div class="sm-lbl">Diverted</div></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card col-1">
+                <div class="card-title"><i class="fa-solid fa-bullseye"></i> Weekly Goal</div>
+                <div class="goal-ring-wrap">
+                    <svg class="progress-ring" width="110" height="110">
+                        <circle stroke="rgba(255,255,255,0.06)" stroke-width="7" fill="transparent" r="48" cx="55" cy="55"/>
+                        <circle id="goalCircle" stroke="var(--cyan)" stroke-width="7" fill="transparent" r="48" cx="55" cy="55" stroke-dasharray="301" stroke-dashoffset="301" stroke-linecap="round"/>
+                    </svg>
+                    <div class="goal-text">
+                        <div class="goal-pct" id="goalPct">0%</div>
+                        <div class="goal-sub">400/500kg</div>
+                    </div>
+                </div>
+                <p style="text-align:center;font-size:0.72rem;color:var(--text-muted);margin-top:10px;font-family:'Space Mono',monospace;">2 days remaining</p>
+            </div>
+
+            <div class="card col-1">
+                <div class="card-title"><i class="fa-solid fa-medal"></i> Achievements</div>
+                <div class="badges-row">
+                    <div class="badge-item unlocked">
+                        <div class="badge-icon-wrap"><i class="fa-solid fa-medal"></i></div>
+                        <div class="badge-name">Green<br>Star</div>
+                    </div>
+                    <div class="badge-item unlocked">
+                        <div class="badge-icon-wrap"><i class="fa-solid fa-leaf"></i></div>
+                        <div class="badge-name">Eco<br>Warrior</div>
+                    </div>
+                    <div class="badge-item">
+                        <div class="badge-icon-wrap" style="border-color:rgba(255,255,255,0.1);color:var(--text-muted);"><i class="fa-solid fa-crown"></i></div>
+                        <div class="badge-name">Carbon<br>King</div>
+                    </div>
+                </div>
+                <div style="margin-top:14px;padding:10px;background:rgba(255,255,255,0.02);border-radius:8px;text-align:center;">
+                    <div style="font-size:0.7rem;color:var(--text-muted);font-family:'Space Mono',monospace;">Next badge in</div>
+                    <div style="font-size:0.95rem;font-weight:800;color:var(--gold);font-family:'Space Mono',monospace;margin-top:4px;">100 kg</div>
+                </div>
+            </div>
+
+            <div class="card col-2">
+                <div class="card-title"><i class="fa-solid fa-wifi"></i> IoT Bin Status</div>
+                <div class="bin-row">
+                    <div class="bin-header"><span>PET Plastic</span><span class="bin-pct" style="color:var(--cyan);">65%</span></div>
+                    <div class="bin-track"><div class="bin-fill" style="width:65%;background:var(--cyan);"></div></div>
+                </div>
+                <div class="bin-row">
+                    <div class="bin-header"><span>HDPE Bags</span><span class="bin-pct" style="color:var(--red);">92%</span></div>
+                    <div class="bin-track"><div class="bin-fill" style="width:92%;background:var(--red);"></div></div>
+                    <div class="bin-alert"><i class="fa-solid fa-triangle-exclamation"></i> Action Required — Schedule Pickup</div>
+                </div>
+                <div class="bin-row" style="margin-bottom:0;">
+                    <div class="bin-header"><span>Cardboard</span><span class="bin-pct" style="color:var(--gold);">43%</span></div>
+                    <div class="bin-track"><div class="bin-fill" style="width:43%;background:var(--gold);"></div></div>
+                </div>
+            </div>
+
+            <div class="card col-2">
+                <div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent Activity</div>
+                <div class="log-entry">
+                    <div class="log-dot" style="background:var(--cyan);box-shadow:0 0 6px var(--cyan);"></div>
+                    <div style="flex:1;">
+                        <div style="font-size:0.85rem;font-weight:700;color:#fff;">Sold 20kg Mixed Plastic</div>
+                        <div style="font-size:0.72rem;color:var(--gold);font-family:'Space Mono',monospace;">+50 EC · +₹3,000.00</div>
+                    </div>
+                    <div class="log-time">2h ago</div>
+                </div>
+                <div class="log-entry">
+                    <div class="log-dot" style="background:var(--blue);box-shadow:0 0 6px var(--blue);"></div>
+                    <div style="flex:1;">
+                        <div style="font-size:0.85rem;font-weight:700;color:#fff;">Pickup Completed</div>
+                        <div style="font-size:0.72rem;color:var(--text-muted);font-family:'Space Mono',monospace;">Manifest #9021</div>
+                    </div>
+                    <div class="log-time">Yesterday</div>
+                </div>
+                <div class="log-entry">
+                    <div class="log-dot" style="background:var(--gold);box-shadow:0 0 6px var(--gold);"></div>
+                    <div style="flex:1;">
+                        <div style="font-size:0.85rem;font-weight:700;color:#fff;">Redeemed Bio-Bags</div>
+                        <div style="font-size:0.72rem;color:var(--gold);font-family:'Space Mono',monospace;">-200 EC</div>
+                    </div>
+                    <div class="log-time">2 days ago</div>
+                </div>
+            </div>
+
+            <div class="card col-4">
+                <div class="card-title"><i class="fa-solid fa-chart-area"></i> Revenue Analytics</div>
+                <div style="height:220px;"><canvas id="revenueChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- ═══ INVENTORY VIEW ═══ -->
+        <div id="view-inventory" class="dashboard-grid view-section hidden">
+            <div class="card col-4" style="text-align:center;cursor:pointer;border:1px dashed rgba(32,201,151,0.3);" onclick="toggleScanner()">
+                <div style="font-size:1.8rem;color:var(--cyan);margin-bottom:8px;"><i class="fa-solid fa-camera"></i></div>
+                <div style="font-size:1rem;font-weight:700;">Identify Waste from a Photo</div>
+                <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;font-family:'Space Mono',monospace;">Capture or upload a clear waste photo</div>
+            </div>
+            <div class="card col-2 row-2">
+                <div class="card-title"><i class="fa-solid fa-scale-balanced"></i> Submit Waste for Pickup</div>
+                <div class="inv-item">
+                    <div class="inv-header"><span><i class="fa-solid fa-bottle-water" style="color:var(--cyan);margin-right:8px;"></i>PET Bottles</span><span class="inv-kg" id="valPet">0 kg</span></div>
+                    <input type="range" class="inv-slider" min="0" max="100" value="0" oninput="updateSellEst('Pet', this.value)">
+                </div>
+                <div class="inv-item">
+                    <div class="inv-header"><span><i class="fa-solid fa-bag-shopping" style="color:var(--blue);margin-right:8px;"></i>Plastic Bags</span><span class="inv-kg" id="valBag">0 kg</span></div>
+                    <input type="range" class="inv-slider" min="0" max="50" value="0" oninput="updateSellEst('Bag', this.value)">
+                </div>
+                <div class="inv-item">
+                    <div class="inv-header"><span><i class="fa-solid fa-box" style="color:var(--gold);margin-right:8px;"></i>Cardboard</span><span class="inv-kg" id="valBox">0 kg</span></div>
+                    <input type="range" class="inv-slider" min="0" max="200" value="0" oninput="updateSellEst('Box', this.value)">
+                </div>
+                <div class="inv-item">
+                    <div class="inv-header"><span><i class="fa-solid fa-wine-bottle" style="color:var(--purple);margin-right:8px;"></i>Glass</span><span class="inv-kg" id="valGlass">0 kg</span></div>
+                    <input type="range" class="inv-slider" min="0" max="80" value="0" oninput="updateSellEst('Glass', this.value)">
+                </div>
+                <div class="inv-estimate">
+                    <div class="est-row"><span style="color:var(--text-soft);">Est. Cash Return</span><span class="est-val" style="color:#fff;">$<span id="estCash">0.00</span></span></div>
+                    <div class="est-row" style="margin-bottom:14px;"><span style="color:var(--text-soft);">Est. Eco-Coins</span><span class="est-val" style="color:var(--gold);"><span id="estCoins">0</span> EC</span></div>
+                    <button class="confirm-btn" onclick="processSale()"><i class="fa-solid fa-check"></i> Confirm Sale</button>
+                </div>
+            </div>
+            <div class="card col-2">
+                <div class="card-title"><i class="fa-solid fa-handshake"></i> Partner: Green Farm</div>
+                <div style="display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.03);padding:16px;border-radius:12px;margin-bottom:14px;">
+                    <div style="width:48px;height:48px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-tractor" style="color:#070d18;font-size:1.3rem;"></i></div>
+                    <div>
+                        <div style="font-weight:700;color:#fff;">Green-Earth Farm</div>
+                        <div style="font-size:0.75rem;color:var(--cyan);font-family:'Space Mono',monospace;">● VERIFIED RECYCLER</div>
+                    </div>
+                </div>
+                <div style="font-size:0.82rem;color:var(--text-soft);line-height:1.8;">
+                    <div style="margin-bottom:8px;"><i class="fa-solid fa-circle-info" style="color:var(--blue);margin-right:8px;"></i>Waste processed into reusable pellets</div>
+                    <div><i class="fa-solid fa-coins" style="color:var(--gold);margin-right:8px;"></i><strong>Policy:</strong> 70% Revenue Share + 1 Coin/kg bonus</div>
+                </div>
+            </div>
+            <div class="card col-2">
+                <div class="card-title"><i class="fa-solid fa-chart-pie"></i> Material Breakdown</div>
+                <div style="height:160px;"><canvas id="materialChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- ═══ MARKETPLACE VIEW ═══ -->
+        <div id="view-market" class="dashboard-grid view-section hidden">
+            <div class="card col-4">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+                    <div>
+                        <div class="card-title" style="margin:0 0 4px;">Redeem Eco-Coins for Rewards</div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);">Spend your coins on sustainable products</div>
+                    </div>
+                    <div style="background:rgba(255,212,59,0.1);border:1px solid rgba(255,212,59,0.2);padding:8px 16px;border-radius:30px;font-family:'Space Mono',monospace;font-weight:700;">
+                        <i class="fa-solid fa-coins" style="color:var(--gold);"></i> Balance: <span id="marketBalance" style="color:var(--gold);">850</span> EC
+                    </div>
+                </div>
+                <div class="market-grid">
+                    <div class="product-card">
+                        <div class="prod-img"><img src="https://th.bing.com/th/id/OIP.pnDba_bWRcSoa9mKiIL1GQHaHa?w=183&h=183&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3" alt="Bio Bags"></div>
+                        <div class="prod-name">Bio-Bags (100pc)</div>
+                        <div class="prod-price">200 EC</div>
+                        <div class="prod-stock">In Stock · 48 units</div>
+                        <button class="buy-btn" onclick="buyItem(200,'Biodegradable Bags')">REDEEM</button>
+                    </div>
+                    <div class="product-card">
+                        <div class="prod-img"><img src="https://th.bing.com/th/id/OIP.-aVfuLnNF041SqOw4ARpcwHaE7?w=253&h=180&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3" alt="Organic Soap"></div>
+                        <div class="prod-name">Organic Soap</div>
+                        <div class="prod-price">450 EC</div>
+                        <div class="prod-stock">In Stock · 12 units</div>
+                        <button class="buy-btn" onclick="buyItem(450,'Organic Soap')">REDEEM</button>
+                    </div>
+                    <div class="product-card">
+                        <div class="prod-img"><img src="https://www.bing.com/th/id/OIP.aLKprAObaUJ5khxYIB8XiQHaE8?w=292&h=211&c=8&rs=1&qlt=90&o=6&dpr=1.3&pid=3.1&rm=2" alt="Planter Box"></div>
+                        <div class="prod-name">Planter Box</div>
+                        <div class="prod-price">600 EC</div>
+                        <div class="prod-stock">Low Stock · 4 units</div>
+                        <button class="buy-btn" onclick="buyItem(600,'Planter Box')">REDEEM</button>
+                    </div>
+                    <div class="product-card">
+                        <div class="prod-img"><img src="https://tse3.mm.bing.net/th/id/OIP.pXytc2EL3_xerLngnQG-wwHaHa?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Bamboo Cutlery"></div>
+                        <div class="prod-name">Bamboo Cutlery</div>
+                        <div class="prod-price">150 EC</div>
+                        <div class="prod-stock">In Stock · 30 units</div>
+                        <button class="buy-btn" onclick="buyItem(150,'Bamboo Cutlery Set')">REDEEM</button>
+                    </div>
+                    <div class="product-card">
+                        <div class="prod-img"><img src="https://th.bing.com/th/id/OIP.BDD6YoY7fKP-RI83mZESIwHaHa?w=168&h=180&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3" alt="Solar Power Bank"></div>
+                        <div class="prod-name">Solar Power Bank</div>
+                        <div class="prod-price">800 EC</div>
+                        <div class="prod-stock">Last unit!</div>
+                        <button class="buy-btn" onclick="buyItem(800,'Solar Power Bank')">REDEEM</button>
+                    </div>
+                    <div class="product-card">
+                        <div class="prod-img"><img src="https://th.bing.com/th/id/OIP.tbrXzOFSwJk4QWakGXNP2wHaGQ?w=200&h=180&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3" alt="Steel Straw Pack"></div>
+                        <div class="prod-name">Steel Straw Pack</div>
+                        <div class="prod-price">100 EC</div>
+                        <div class="prod-stock">In Stock · 55 units</div>
+                        <button class="buy-btn" onclick="buyItem(100,'Steel Straw Pack')">REDEEM</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ LOGISTICS VIEW ═══ -->
+        <div id="view-logistics" class="dashboard-grid view-section hidden">
+            <div class="card col-2 row-2">
+                <div class="card-title"><i class="fa-solid fa-route"></i> Live Route Tracking</div>
+                <div class="map-container">
+                    <div class="map-route"></div>
+                    <div class="map-point point-start"></div>
+                    <div class="map-point point-end"></div>
+                    <div class="map-truck"><i class="fa-solid fa-truck-fast"></i></div>
+                    <div class="map-label" style="bottom:14px;left:14px;">ROUTE: #GF-9021-A</div>
+                    <div class="map-label" style="top:14px;left:8%;transform:translateX(-50%);" >📦 Depot</div>
+                    <div class="map-label" style="top:14px;left:92%;transform:translateX(-50%);">🏪 Shop</div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;">
+                    <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:10px;text-align:center;">
+                        <div style="font-size:0.65rem;color:var(--text-muted);font-family:'Space Mono',monospace;margin-bottom:4px;">DISTANCE LEFT</div>
+                        <div style="font-size:1.2rem;font-weight:800;color:#fff;font-family:'Space Mono',monospace;">4.2 km</div>
+                    </div>
+                    <div style="background:rgba(32,201,151,0.07);border:1px solid rgba(32,201,151,0.15);padding:12px;border-radius:10px;text-align:center;">
+                        <div style="font-size:0.65rem;color:var(--text-muted);font-family:'Space Mono',monospace;margin-bottom:4px;">ETA</div>
+                        <div style="font-size:1.2rem;font-weight:800;color:var(--cyan);font-family:'Space Mono',monospace;">14 MIN</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card col-2">
+                <div class="card-title"><i class="fa-solid fa-truck"></i> Inbound Vehicle</div>
+                <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;">
+                    <div style="width:60px;height:60px;background:rgba(255,212,59,0.1);border-radius:12px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,212,59,0.2);">
+                        <i class="fa-solid fa-bolt" style="font-size:1.6rem;color:var(--gold);"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight:700;font-size:1rem;color:#fff;">Electric Loader · EV-7</div>
+                        <div style="font-size:0.78rem;color:var(--text-soft);font-family:'Space Mono',monospace;margin-top:4px;"><i class="fa-solid fa-battery-three-quarters" style="color:var(--cyan);"></i> 78% &nbsp;|&nbsp; <i class="fa-solid fa-user"></i> Mike R.</div>
+                    </div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03);border-radius:10px;overflow:hidden;">
+                    <div style="height:4px;background:var(--cyan);width:62%;"></div>
+                </div>
+                <div style="font-size:0.7rem;color:var(--text-muted);font-family:'Space Mono',monospace;margin-top:4px;">62% route completed</div>
+            </div>
+            <div class="card col-2">
+                <div class="card-title"><i class="fa-solid fa-file-lines"></i> Manifest #9021</div>
+                <div class="log-entry">
+                    <div class="log-dot" style="background:var(--cyan);"></div>
+                    <div style="flex:1;"><div style="font-size:0.875rem;font-weight:700;color:#fff;">PET Bottles</div><div style="font-size:0.72rem;color:var(--text-muted);font-family:'Space Mono',monospace;">Est. 45 kg</div></div>
+                    <div style="color:var(--cyan);font-size:0.78rem;font-weight:700;font-family:'Space Mono',monospace;">READY</div>
+                </div>
+                <div class="log-entry">
+                    <div class="log-dot" style="background:var(--cyan);"></div>
+                    <div style="flex:1;"><div style="font-size:0.875rem;font-weight:700;color:#fff;">HDPE Plastics</div><div style="font-size:0.72rem;color:var(--text-muted);font-family:'Space Mono',monospace;">Est. 12 kg</div></div>
+                    <div style="color:var(--cyan);font-size:0.78rem;font-weight:700;font-family:'Space Mono',monospace;">READY</div>
+                </div>
+                <div class="log-entry">
+                    <div class="log-dot" style="background:var(--gold);"></div>
+                    <div style="flex:1;"><div style="font-size:0.875rem;font-weight:700;color:#fff;">Cardboard</div><div style="font-size:0.72rem;color:var(--text-muted);font-family:'Space Mono',monospace;">Est. 28 kg</div></div>
+                    <div style="color:var(--gold);font-size:0.78rem;font-weight:700;font-family:'Space Mono',monospace;">PACKING</div>
+                </div>
+            </div>
+
+            <!-- PICKUP SCHEDULER -->
+            <div class="card col-4">
+                <div class="card-title"><i class="fa-solid fa-calendar-days"></i> Pickup Scheduler</div>
+                <div style="display:grid;grid-template-columns:1fr auto;gap:24px;align-items:start;">
+                    <div>
+                        <div style="font-size:0.875rem;font-weight:700;color:#fff;margin-bottom:4px;">February 2026</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);font-family:'Space Mono',monospace;margin-bottom:12px;">Click a date to schedule a pickup</div>
+                        <div class="scheduler-grid" id="calendarGrid"></div>
+                    </div>
+                    <div style="min-width:200px;">
+                        <div style="font-size:0.75rem;color:var(--text-muted);font-family:'Space Mono',monospace;margin-bottom:10px;">SCHEDULED PICKUPS</div>
+                        <div id="scheduledList" style="display:flex;flex-direction:column;gap:8px;"></div>
+                        <button onclick="clearSchedule()" style="width:100%;padding:8px;background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.2);border-radius:8px;color:var(--red);font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;cursor:pointer;margin-top:12px;">Clear All</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ CHALLENGES VIEW ═══ -->
+        <div id="view-challenges" class="dashboard-grid view-section hidden">
+            <div class="card col-2">
+                <div class="card-title"><i class="fa-solid fa-fire"></i> Active Challenges</div>
+                <div class="challenge-card">
+                    <div class="ch-header">
+                        <div class="ch-title">🏆 District Plastic Drive</div>
+                        <div class="ch-reward">+500 EC</div>
+                    </div>
+                    <div class="ch-desc">Recycle 1 tonne of mixed plastic before month-end to claim the Gold Badge and bonus coins.</div>
+                    <div class="ch-progress"><div class="ch-fill" style="width:68%;background:var(--cyan);"></div></div>
+                    <div class="ch-foot"><span>680 / 1,000 kg</span><span>12 days left</span></div>
+                </div>
+                <div class="challenge-card">
+                    <div class="ch-header">
+                        <div class="ch-title">⚡ 7-Day Streak</div>
+                        <div class="ch-reward">+200 EC</div>
+                    </div>
+                    <div class="ch-desc">Submit recyclables 7 days in a row. Current streak: 5 days.</div>
+                    <div class="ch-progress"><div class="ch-fill" style="width:71%;background:var(--gold);"></div></div>
+                    <div class="ch-foot"><span>5 / 7 days</span><span>2 days left</span></div>
+                </div>
+                <div class="challenge-card">
+                    <div class="ch-header">
+                        <div class="ch-title">🌊 Ocean Plastic Hero</div>
+                        <div class="ch-reward">+1000 EC</div>
+                    </div>
+                    <div class="ch-desc">Collect and submit 200kg of coastal/beach plastic waste this quarter.</div>
+                    <div class="ch-progress"><div class="ch-fill" style="width:35%;background:var(--blue);"></div></div>
+                    <div class="ch-foot"><span>70 / 200 kg</span><span>45 days left</span></div>
+                </div>
+            </div>
+            <div class="card col-2">
+                <div class="card-title"><i class="fa-solid fa-calendar-check"></i> Completed Challenges</div>
+                <div class="challenge-card" style="border-color:rgba(32,201,151,0.2);background:rgba(32,201,151,0.03);">
+                    <div class="ch-header">
+                        <div class="ch-title" style="display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-check-circle" style="color:var(--cyan);"></i> First Sale</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);font-family:'Space Mono',monospace;">Completed</div>
+                    </div>
+                    <div class="ch-progress"><div class="ch-fill" style="width:100%;background:var(--cyan);"></div></div>
+                    <div class="ch-foot"><span style="color:var(--cyan);">+50 EC earned</span><span>Jan 5</span></div>
+                </div>
+                <div class="challenge-card" style="border-color:rgba(32,201,151,0.2);background:rgba(32,201,151,0.03);">
+                    <div class="ch-header">
+                        <div class="ch-title" style="display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-check-circle" style="color:var(--cyan);"></i> 100kg Milestone</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);font-family:'Space Mono',monospace;">Completed</div>
+                    </div>
+                    <div class="ch-progress"><div class="ch-fill" style="width:100%;background:var(--cyan);"></div></div>
+                    <div class="ch-foot"><span style="color:var(--cyan);">+150 EC earned</span><span>Jan 18</span></div>
+                </div>
+            </div>
+            <div class="card col-4">
+                <div class="card-title"><i class="fa-solid fa-globe"></i> Community Impact This Month</div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:8px;">
+                    <div style="text-align:center;padding:20px;background:rgba(255,255,255,0.02);border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
+                        <div style="font-size:2rem;font-weight:800;color:var(--cyan);font-family:'Space Mono',monospace;">8.4t</div>
+                        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Plastic Collected</div>
+                    </div>
+                    <div style="text-align:center;padding:20px;background:rgba(255,255,255,0.02);border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
+                        <div style="font-size:2rem;font-weight:800;color:var(--gold);font-family:'Space Mono',monospace;">243</div>
+                        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Active Recyclers</div>
+                    </div>
+                    <div style="text-align:center;padding:20px;background:rgba(255,255,255,0.02);border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
+                        <div style="font-size:2rem;font-weight:800;color:#69db7c;font-family:'Space Mono',monospace;">18.2t</div>
+                        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">CO₂ Offset</div>
+                    </div>
+                    <div style="text-align:center;padding:20px;background:rgba(255,255,255,0.02);border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
+                        <div style="font-size:2rem;font-weight:800;color:var(--purple);font-family:'Space Mono',monospace;">₹35L</div>
+                        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Revenue Distributed</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ LEADERBOARD VIEW ═══ -->
+        <div id="view-leaderboard" class="dashboard-grid view-section hidden">
+            <div class="card col-2">
+                <div class="card-title"><i class="fa-solid fa-ranking-star"></i> District Leaderboard</div>
+                <div id="leaderboardList"></div>
+            </div>
+            <div class="card col-2">
+                <div class="card-title"><i class="fa-solid fa-chart-bar"></i> Top Materials Recycled</div>
+                <div style="height:240px;"><canvas id="leaderMaterialChart"></canvas></div>
+            </div>
+            <div class="card col-4">
+                <div class="card-title"><i class="fa-solid fa-trophy"></i> Hall of Fame</div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+                    <div style="text-align:center;padding:20px;background:rgba(255,212,59,0.05);border:1px solid rgba(255,212,59,0.2);border-radius:14px;">
+                        <div style="font-size:2rem;margin-bottom:8px;">🥇</div>
+                        <div style="font-weight:800;font-size:1rem;color:#fff;">EcoMart Central</div>
+                        <div style="font-size:0.75rem;color:var(--gold);font-family:'Space Mono',monospace;margin-top:4px;">2,847 kg · 3,200 EC</div>
+                    </div>
+                    <div style="text-align:center;padding:20px;background:rgba(173,181,189,0.05);border:1px solid rgba(173,181,189,0.15);border-radius:14px;">
+                        <div style="font-size:2rem;margin-bottom:8px;">🥈</div>
+                        <div style="font-weight:800;font-size:1rem;color:#fff;">GreenZone Retail</div>
+                        <div style="font-size:0.75rem;color:#adb5bd;font-family:'Space Mono',monospace;margin-top:4px;">2,341 kg · 2,750 EC</div>
+                    </div>
+                    <div style="text-align:center;padding:20px;background:rgba(205,127,50,0.05);border:1px solid rgba(205,127,50,0.2);border-radius:14px;">
+                        <div style="font-size:2rem;margin-bottom:8px;">🥉</div>
+                        <div style="font-weight:800;font-size:1rem;color:#fff;">FreshLoop Store</div>
+                        <div style="font-size:0.75rem;color:#cd7f32;font-family:'Space Mono',monospace;margin-top:4px;">1,980 kg · 2,100 EC</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────
+let cash = 1240.50, coins = 850;
+let sellData = { Pet: 0, Bag: 0, Box: 0, Glass: 0 };
+let prices    = { Pet: 2.5, Bag: 1.8, Box: 0.5, Glass: 0.8 };
+let videoStream = null;
+let scheduledDates = [14]; // pre-scheduled today (Feb 14)
+let co2Live = 1847.36;
+
+// ─── PARTICLES ───────────────────────────────────────────────────
+(function initParticles() {
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    let W, H, particles = [];
+
+    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    for (let i = 0; i < 60; i++) particles.push({
+        x: Math.random() * 1920, y: Math.random() * 1080,
+        r: Math.random() * 1.5 + 0.3,
+        vx: (Math.random() - 0.5) * 0.3, vy: -Math.random() * 0.4 - 0.1,
+        o: Math.random() * 0.5 + 0.1
+    });
+
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+        particles.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(32,201,151,${p.o})`;
+            ctx.fill();
+            p.x += p.vx; p.y += p.vy;
+            if (p.y < -5) { p.y = H + 5; p.x = Math.random() * W; }
+            if (p.x < -5) p.x = W + 5;
+            if (p.x > W + 5) p.x = -5;
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+// ─── TOAST SYSTEM ────────────────────────────────────────────────
+function showToast(type, title, msg, duration = 4000) {
+    const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', warn: 'fa-triangle-exclamation', info: 'fa-circle-info' };
+    const container = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `
+        <i class="toast-icon fa-solid ${icons[type]}"></i>
+        <div class="toast-body"><div class="toast-title">${title}</div><div class="toast-msg">${msg}</div></div>
+        <i class="toast-close fa-solid fa-xmark" onclick="dismissToast(this.parentElement)"></i>
+    `;
+    container.appendChild(el);
+    setTimeout(() => dismissToast(el), duration);
+}
+
+function dismissToast(el) {
+    if (!el || el.classList.contains('out')) return;
+    el.classList.add('out');
+    setTimeout(() => el.remove(), 250);
+}
+
+// ─── PRICE TICKER ────────────────────────────────────────────────
+const tickerData = [
+    { name: 'PET Bottles',  price: '₹15/kg',  delta: '+₹0.50', up: true },
+    { name: 'HDPE Plastic', price: '₹10/kg',  delta: '+₹0.25', up: true },
+    { name: 'Cardboard',    price: '₹6/kg',   delta: '-₹0.10', up: false },
+    { name: 'Glass',        price: '₹2/kg',   delta: '₹0.00', up: true },
+    { name: 'Aluminium',    price: '₹120/kg', delta: '+₹1.00', up: true },
+    { name: 'E-Waste',      price: '₹100/kg', delta: '-₹0.50', up: false },
+    { name: 'PVC',          price: '₹5/kg',   delta: '+₹0.10', up: true },
+    { name: 'Copper',       price: '₹600/kg', delta: '+₹2.00', up: true },
+];
+
+function buildTicker() {
+    const inner = document.getElementById('tickerInner');
+    const items = [...tickerData, ...tickerData]; // duplicate for seamless loop
+    inner.innerHTML = items.map(t => `
+        <div class="ticker-item">
+            <span class="ticker-name">${t.name}</span>
+            <span class="ticker-price">${t.price}</span>
+            <span class="${t.up ? 'ticker-up' : 'ticker-down'}">${t.up ? '▲' : '▼'} ${t.delta}</span>
+        </div>
+    `).join('');
+}
+buildTicker();
+
+// ─── CO2 LIVE COUNTER ────────────────────────────────────────────
+function animateCounter(id, target, decimals = 0, suffix = '') {
+    const el = document.getElementById(id);
+    let start = 0, duration = 2200;
+    const step = ts => {
+        if (!start) start = ts;
+        const p = Math.min((ts - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        el.textContent = (target * ease).toFixed(decimals) + suffix;
+        if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+}
+
+// Increment CO2 in real-time
+setInterval(() => {
+    co2Live += Math.random() * 0.02;
+    document.getElementById('co2Counter').textContent = co2Live.toFixed(2);
+}, 3000);
+
+// ─── SPLASH ──────────────────────────────────────────────────────
+setTimeout(() => {
+    const splash = document.getElementById('splash-screen');
+    splash.style.opacity = '0';
+    splash.style.visibility = 'hidden';
+    // Animate co2 on load
+    setTimeout(() => {
+        animateCounter('co2Counter', co2Live, 2);
+        animateCounter('treesCounter', 82);
+        animateCounter('kmCounter', 7340);
+        animateCounter('kwCounter', 2914);
+        // Animate goal ring
+        const circle = document.getElementById('goalCircle');
+        const pct = 0.80;
+        const circumference = 301;
+        circle.style.strokeDashoffset = circumference * (1 - pct);
+        document.getElementById('goalPct').textContent = '80%';
+    }, 300);
+}, 2200);
+
+// ─── NAVIGATION ──────────────────────────────────────────────────
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('active');
+}
+
+function switchView(viewId, navEl) {
+    const titles = {
+        dashboard:   ['Overview',    'Welcome back, Partner.'],
+        inventory:   ['Inventory',   'Manage your recyclables.'],
+        market:      ['Eco-Market',  'Spend your Eco-Coins.'],
+        logistics:   ['Logistics',   'Supply chain tracking.'],
+        challenges:  ['Challenges',  'Active community missions.'],
+        leaderboard: ['Leaderboard', 'District rankings.'],
+    };
+    document.getElementById('pageHeader').textContent    = titles[viewId][0];
+    document.getElementById('pageSubheader').textContent = titles[viewId][1];
+    document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+    document.getElementById(`view-${viewId}`).classList.remove('hidden');
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    navEl.classList.add('active');
+
+    // Init charts on first visit
+    if (viewId === 'inventory' && !window.materialChartInited) {
+        initMaterialChart(); window.materialChartInited = true;
+    }
+    if (viewId === 'leaderboard' && !window.lbChartInited) {
+        initLeaderboardData(); window.lbChartInited = true;
+    }
+    if (window.innerWidth <= 1100) toggleSidebar();
+}
+
+// ─── PROFILE ─────────────────────────────────────────────────────
+function toggleProfile() {
+    const m = document.getElementById('profileModal');
+    m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+}
+function saveProfile() {
+    const name = document.getElementById('shopNameInput').value;
+    document.getElementById('sidebarName').textContent = name;
+    toggleProfile();
+    showToast('success', 'Profile Updated', 'Your shop name has been saved successfully.');
+}
+
+// ─── SCANNER ─────────────────────────────────────────────────────
+function toggleScanner() {
+    window.location.assign('index.html?openScanner=1');
+}
+function closeScanner() {
+    document.getElementById('scannerOverlay').style.display = 'none';
+    if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+}
+
+// ─── CHAT ────────────────────────────────────────────────────────
+const botReplies = [
+    "I'll connect you with a recycling agent shortly!",
+    "Great question! PET bottles currently fetch ₹15/kg (estimated).",
+    "Your next pickup is tomorrow at 08:00 AM.",
+    "You have 850 Eco-Coins available to redeem.",
+    "To schedule a pickup, head to the Logistics section.",
+];
+function toggleChat() {
+    const c = document.getElementById('chatWindow');
+    c.style.display = c.style.display === 'flex' ? 'none' : 'flex';
+}
+function sendChat() {
+    const input = document.getElementById('chatInput');
+    const body  = document.getElementById('chatBody');
+    if (!input.value.trim()) return;
+    const um = document.createElement('div');
+    um.className = 'chat-msg msg-user';
+    um.textContent = input.value;
+    body.appendChild(um);
+    input.value = '';
+    body.scrollTop = body.scrollHeight;
+    setTimeout(() => {
+        const bm = document.createElement('div');
+        bm.className = 'chat-msg msg-bot';
+        bm.textContent = botReplies[Math.floor(Math.random() * botReplies.length)];
+        body.appendChild(bm);
+        body.scrollTop = body.scrollHeight;
+    }, 900);
+}
+function handleChat(e) { if (e.key === 'Enter') sendChat(); }
+
+// ─── SELL LOGIC ───────────────────────────────────────────────────
+function updateSellEst(type, val) {
+    sellData[type] = parseInt(val);
+    document.getElementById(`val${type}`).textContent = val + ' kg';
+    let totalCash  = Object.keys(sellData).reduce((a, k) => a + sellData[k] * (prices[k] || 0), 0);
+    let totalCoins = Object.values(sellData).reduce((a, b) => a + b, 0);
+    document.getElementById('estCash').textContent  = totalCash.toFixed(2);
+    document.getElementById('estCoins').textContent = totalCoins;
+}
+function processSale() {
+    const pendingCash  = parseFloat(document.getElementById('estCash').textContent);
+    const pendingCoins = parseInt(document.getElementById('estCoins').textContent);
+    if (pendingCash <= 0) { showToast('warn', 'Nothing to Sell', 'Use the sliders to set quantities first.'); return; }
+    cash  += pendingCash;
+    coins += pendingCoins;
+    updateWalletUI();
+    showToast('success', 'Sale Confirmed! 🎉', `+$${pendingCash.toFixed(2)} cash and +${pendingCoins} EC added to your wallet.`);
+    // reset sliders
+    document.querySelectorAll('.inv-slider').forEach(s => { s.value = 0; s.dispatchEvent(new Event('input')); });
+}
+function buyItem(cost, name) {
+    if (coins >= cost) {
+        coins -= cost;
+        updateWalletUI();
+        showToast('success', `Redeemed: ${name}`, `${cost} Eco-Coins spent. Your order is being prepared.`);
+    } else {
+        showToast('error', 'Insufficient Coins', `You need ${cost - coins} more EC to redeem this item.`);
+    }
+}
+function updateWalletUI() {
+    // Removed header wallet updates
+    // document.getElementById('cashBalance').textContent   = '$' + cash.toFixed(2);
+    // document.getElementById('coinBalance').textContent   = coins + ' EC';
+    
+    // Only update Market Balance if element exists (in market view)
+    const marketBal = document.getElementById('marketBalance');
+    if (marketBal) marketBal.textContent = coins;
+}
+
+// ─── CALENDAR SCHEDULER ──────────────────────────────────────────
+function buildCalendar() {
+    const grid = document.getElementById('calendarGrid');
+    const days = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+    grid.innerHTML = days.map(d => `<div class="cal-day-header">${d}</div>`).join('');
+    // Feb 2026 starts on Sunday
+    const daysInMonth = 28, startDay = 0;
+    for (let i = 0; i < startDay; i++) grid.innerHTML += `<div class="cal-day empty"></div>`;
+    for (let d = 1; d <= daysInMonth; d++) {
+        const isPast = d < 14;
+        const isToday = d === 14;
+        const isScheduled = scheduledDates.includes(d);
+        let cls = 'cal-day';
+        if (isPast) cls += ' past';
+        if (isToday) cls += ' today';
+        if (isScheduled) cls += ' scheduled';
+        grid.innerHTML += `<div class="${cls}" onclick="toggleSchedule(${d})">${d}</div>`;
+    }
+    renderScheduledList();
+}
+
+function toggleSchedule(day) {
+    if (day < 14) return;
+    if (scheduledDates.includes(day)) {
+        scheduledDates = scheduledDates.filter(d => d !== day);
+        showToast('info', 'Pickup Removed', `Feb ${day} pickup has been cancelled.`);
+    } else {
+        scheduledDates.push(day);
+        showToast('success', 'Pickup Scheduled', `Pickup booked for Feb ${day}, 2026 at 08:00 AM.`);
+    }
+    buildCalendar();
+}
+function clearSchedule() { scheduledDates = []; buildCalendar(); showToast('info', 'Schedule Cleared', 'All scheduled pickups have been removed.'); }
+function renderScheduledList() {
+    const list = document.getElementById('scheduledList');
+    if (!scheduledDates.length) { list.innerHTML = '<div style="font-size:0.75rem;color:var(--text-muted);font-family:\'Space Mono\',monospace;">No pickups scheduled.</div>'; return; }
+    list.innerHTML = [...scheduledDates].sort((a,b) => a-b).map(d => `
+        <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(32,201,151,0.07);border:1px solid rgba(32,201,151,0.15);border-radius:8px;padding:8px 10px;">
+            <div>
+                <div style="font-size:0.8rem;font-weight:700;color:#fff;">Feb ${d}</div>
+                <div style="font-size:0.65rem;color:var(--text-muted);font-family:'Space Mono',monospace;">08:00 AM</div>
+            </div>
+            <i class="fa-solid fa-xmark" style="color:var(--text-muted);cursor:pointer;font-size:0.8rem;" onclick="toggleSchedule(${d})"></i>
+        </div>
+    `).join('');
+}
+
+// ─── LEADERBOARD DATA ─────────────────────────────────────────────
+const lbData = [
+    { name: 'EcoMart Central', kg: 2847, ec: 3200, color: '#4dabf7' },
+    { name: 'GreenZone Retail', kg: 2341, ec: 2750, color: '#69db7c' },
+    { name: 'FreshLoop Store',  kg: 1980, ec: 2100, color: '#cc5de8' },
+    { name: 'Green Link Shop ★', kg: 1640, ec: 1850, color: '#20c997', isMe: true },
+    { name: 'NaturaPack',       kg: 1420, ec: 1520, color: '#ffd43b' },
+    { name: 'EarthFirst Hub',   kg: 1180, ec: 1240, color: '#ff6b6b' },
+    { name: 'CycleUp Mart',     kg: 960,  ec: 1020, color: '#74c0fc' },
+];
+const rankClasses = ['gold','silver','bronze','','','',''];
+
+function initLeaderboardData() {
+    const list = document.getElementById('leaderboardList');
+    list.innerHTML = lbData.map((p, i) => `
+        <div class="lb-row ${p.isMe ? 'me' : ''}">
+            <div class="lb-rank ${rankClasses[i]}">${i + 1}</div>
+            <div class="lb-avatar" style="background:${p.color};">${p.name.split(' ').map(w => w[0]).join('').slice(0,2)}</div>
+            <div class="lb-name">${p.name}</div>
+            <div>
+                <div class="lb-score">${p.ec.toLocaleString()} EC</div>
+                <div class="lb-kg">${p.kg.toLocaleString()} kg</div>
+            </div>
+        </div>
+    `).join('');
+
+    const ctx2 = document.getElementById('leaderMaterialChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: lbData.map(p => p.name.split(' ')[0]),
+            datasets: [{ label: 'kg Recycled', data: lbData.map(p => p.kg), backgroundColor: lbData.map(p => p.color + '55'), borderColor: lbData.map(p => p.color), borderWidth: 1.5, borderRadius: 6 }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+                y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5a7a6e', font: { family: 'Space Mono' } } },
+                x: { grid: { display: false }, ticks: { color: '#5a7a6e', font: { family: 'Space Mono' } } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+}
+
+// ─── CHARTS ───────────────────────────────────────────────────────
+function initMaterialChart() {
+    const ctx = document.getElementById('materialChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['PET Bottles', 'HDPE Bags', 'Cardboard', 'Glass'],
+            datasets: [{ data: [45, 20, 28, 7], backgroundColor: ['rgba(32,201,151,0.7)', 'rgba(77,171,247,0.7)', 'rgba(255,212,59,0.7)', 'rgba(204,93,232,0.7)'], borderColor: ['#20c997','#4dabf7','#ffd43b','#cc5de8'], borderWidth: 1.5 }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: '#8aada0', font: { family: 'Space Mono', size: 10 }, padding: 12, boxWidth: 10 } } },
+            cutout: '65%'
+        }
+    });
+}
+
+window.onload = function () {
+    // Revenue Chart
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, 220);
+    gradient.addColorStop(0, 'rgba(32,201,151,0.2)');
+    gradient.addColorStop(1, 'rgba(32,201,151,0)');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: [35000, 56000, 49000, 76000, 87000, 98000, 103000],
+                borderColor: '#20c997', borderWidth: 2,
+                backgroundColor: gradient, fill: true, tension: 0.45,
+                pointBackgroundColor: '#20c997', pointBorderColor: '#070d18', pointBorderWidth: 2, pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+                y: {
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: {
+                        color: '#5a7a6e',
+                        font: { family: 'Space Mono', size: 11 },
+                        callback: value => new Intl.NumberFormat('en-IN', {
+                            style: 'currency',
+                            currency: 'INR',
+                            maximumFractionDigits: 0
+                        }).format(value)
+                    }
+                },
+                x: { grid: { display: false }, ticks: { color: '#5a7a6e', font: { family: 'Space Mono', size: 11 } } }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(12,22,42,0.95)', borderColor: 'rgba(32,201,151,0.3)', borderWidth: 1,
+                    titleColor: '#fff', bodyColor: '#8aada0', titleFont: { family: 'Syne', weight: '700' },
+                    bodyFont: { family: 'Space Mono' },
+                    callbacks: { label: context => `Revenue: ${new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(context.parsed.y)}` }
+                }
+            }
+        }
+    });
+
+    // Orb pulse
+    anime({ targets: '#ecoOrb', scale: [0.97, 1.03], duration: 2800, direction: 'alternate', loop: true, easing: 'easeInOutSine' });
+
+    buildCalendar();
+
+    // Welcome toast
+    setTimeout(() => showToast('info', 'Welcome back! 🌿', 'HDPE Bags bin is 92% full — schedule a pickup soon.'), 2600);
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KrishiSetu – India's Most Comprehensive Farmer Intelligence Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --earthy-beige: #F9F7F2;
+            --farm-green: #064E3B;
+            --light-green: #059669;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--earthy-beige);
+            scroll-behavior: smooth;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #064E3B 0%, #065F46 100%);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #FBBF24;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .active-nav::after {
+            width: 100%;
+        }
+
+        /* Interactive Buttons */
+        .btn-interact {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-interact:active {
+            transform: scale(0.95);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #064E3B; border-radius: 4px; }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-emerald-950 text-white sticky top-0 z-[100] border-b border-emerald-900 shadow-xl">
+        <div class="max-w-7xl mx-auto px-4 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex items-center gap-2 cursor-pointer btn-interact" onclick="navigateTo('home')">
+                    <div class="bg-amber-400 p-2 rounded-lg">
+                        <i data-lucide="sprout" class="text-emerald-950 w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <span class="text-2xl font-extrabold tracking-tighter">KrishiSetu</span>
+                        <p class="text-[9px] uppercase tracking-widest text-amber-400 font-bold">Bharat Ka Kisan Network</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8 font-semibold text-sm">
+                    <button onclick="navigateTo('home')" id="btn-home" class="nav-link active-nav uppercase tracking-wider btn-interact">Home</button>
+                    <button onclick="navigateTo('intelligence')" id="btn-intelligence" class="nav-link uppercase tracking-wider btn-interact">Crop Intelligence</button>
+                    <button onclick="navigateTo('mandi')" id="btn-mandi" class="nav-link uppercase tracking-wider btn-interact">Mandi Rates</button>
+                    <button onclick="navigateTo('weather')" id="btn-weather" class="nav-link uppercase tracking-wider btn-interact">Weather Hub</button>
+                    <button onclick="navigateTo('community')" id="btn-community" class="nav-link uppercase tracking-wider btn-interact">Community</button>
+                    <button onclick="navigateTo('transport')" id="btn-transport" class="nav-link uppercase tracking-wider btn-interact">Logistics</button>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleLanguage()" class="bg-emerald-900 hover:bg-emerald-800 px-4 py-2 rounded-full text-xs font-bold border border-emerald-700 transition-all btn-interact" id="lang-btn">
+                        हिंदी (HINDI)
+                    </button>
+                    <div class="relative cursor-pointer btn-interact">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
+                        <span class="absolute -top-1 -right-1 bg-amber-500 text-[8px] text-emerald-950 rounded-full w-4 h-4 flex items-center justify-center font-bold">5</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main id="app-content">
+        <!-- Views are injected here -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-emerald-950 text-emerald-100 py-12 border-t border-emerald-900 mt-20">
+        <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div class="space-y-4">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="sprout" class="text-amber-400"></i>
+                    <span class="text-xl font-bold text-white">KrishiSetu</span>
+                </div>
+                <p class="text-sm opacity-70 leading-relaxed">Empowering 100 Million+ Indian farmers with real-time data, community support, and market access. Built for Bharat.</p>
+                <div class="flex gap-4">
+                    <i data-lucide="facebook" class="w-5 h-5 cursor-pointer hover:text-amber-400 btn-interact"></i>
+                    <i data-lucide="twitter" class="w-5 h-5 cursor-pointer hover:text-amber-400 btn-interact"></i>
+                    <i data-lucide="youtube" class="w-5 h-5 cursor-pointer hover:text-amber-400 btn-interact"></i>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-4 uppercase text-xs tracking-widest">Resources</h4>
+                <ul class="text-sm space-y-2 opacity-70">
+                    <li class="hover:text-amber-400 cursor-pointer btn-interact">Government Schemes</li>
+                    <li class="hover:text-amber-400 cursor-pointer btn-interact">Organic Farming Guide</li>
+                    <li class="hover:text-amber-400 cursor-pointer btn-interact">Fertilizer Calculator</li>
+                    <li class="hover:text-amber-400 cursor-pointer btn-interact">Success Stories</li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-4 uppercase text-xs tracking-widest">Support</h4>
+                <ul class="text-sm space-y-2 opacity-70">
+                    <li class="hover:text-amber-400 cursor-pointer btn-interact">Expert Helpline</li>
+                    <li class="hover:text-amber-400 cursor-pointer btn-interact">Mandi Complaints</li>
+                    <li class="hover:text-amber-400 cursor-pointer btn-interact">Privacy Policy</li>
+                    <li class="hover:text-amber-400 cursor-pointer btn-interact">Contact Us</li>
+                </ul>
+            </div>
+            <div class="space-y-4">
+                <h4 class="font-bold text-white mb-4 uppercase text-xs tracking-widest">Newsletter</h4>
+                <p class="text-xs opacity-70">Get weekly seasonal crop tips via SMS/Email.</p>
+                <div class="flex">
+                    <input type="text" placeholder="Mobile No." class="bg-emerald-900 border-none rounded-l-lg px-3 py-2 text-sm w-full outline-none">
+                    <button class="bg-amber-400 text-emerald-950 px-4 py-2 rounded-r-lg font-bold text-sm btn-interact">Join</button>
+                </div>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 mt-12 pt-8 border-t border-emerald-900 text-center text-[10px] opacity-40">
+            © 2024 KRISHISETU TECHNOLOGIES PVT LTD. ALL RIGHTS RESERVED.
+        </div>
+    </footer>
+
+    <script>
+        // --- State ---
+        let lang = 'en';
+        let currentTab = 'home';
+        let selectedCropId = null;
+        let chartInstance = null;
+        let probChart = null;
+
+        const t = (en, hi) => (lang === 'en' ? en : hi);
+
+        // --- Extensive Crop Data ---
+        const CROPS = [
+            { 
+                id: 1, name: 'Wheat', hi: 'गेंहू', type: 'Rabi', soil: 'Loamy/Alluvial', water: '3-4 cycles', seeds: '45kg/acre', yield: '18-22Q/acre', price: '₹2,125/Q', duration: '120-140 Days', pests: 'Rust, Blight', profit: 'Very High',
+                temp: '15-25°C', ph: '6.0-7.5', fertilizer: 'NPK 120:60:40', 
+                guide: [
+                    { step: 'Soil Preparation', desc: 'Plough the field 2-3 times. Add 10 tonnes of FYM/acre.' },
+                    { step: 'Sowing Time', desc: 'Ideal time is November 1st to 15th. Use 10cm row spacing.' },
+                    { step: 'First Irrigation', desc: 'CRI stage (Crown Root Initiation) - approx 21 days after sowing.' },
+                    { step: 'Weeding', desc: 'Apply 2-4-D for broad-leaf weeds after 30-35 days.' }
+                ]
+            },
+            { 
+                id: 2, name: 'Rice', hi: 'धान', type: 'Kharif', soil: 'Clayey/Silt', water: 'High (Standing)', seeds: '12kg/acre', yield: '25-30Q/acre', price: '₹2,040/Q', duration: '110-150 Days', pests: 'Leaf Folder, Stem Borer', profit: 'Medium',
+                temp: '20-35°C', ph: '5.5-6.5', fertilizer: 'NPK 100:50:50',
+                guide: [
+                    { step: 'Nursery Prep', desc: 'Soak seeds for 24 hours. Sow in raised nursery beds.' },
+                    { step: 'Transplanting', desc: 'Move seedlings (25 days old) to puddled field.' },
+                    { step: 'Water Management', desc: 'Keep 5cm standing water during tillering stage.' }
+                ]
+            },
+            { id: 3, name: 'Mustard', hi: 'सरसों', type: 'Rabi', soil: 'Sandy Loam', water: 'Low', seeds: '2-3kg/acre', yield: '8-10Q/acre', price: '₹5,450/Q', duration: '100-110 Days', pests: 'Aphids, Painted Bug', profit: 'High', temp: '10-25°C', ph: '6.0-7.0', fertilizer: 'NPK 80:40:40' },
+            { id: 4, name: 'Sugarcane', hi: 'गन्ना', type: 'Annual', soil: 'Deep Loam', water: 'High', seeds: '35,000 sets', yield: '350-450Q/acre', price: '₹315/Q', duration: '10-12 Months', pests: 'Red Rot, Top Borer', profit: 'High', temp: '20-30°C', ph: '6.5-7.5', fertilizer: 'NPK 150:80:60' },
+            { id: 5, name: 'Cotton', hi: 'कपास', type: 'Kharif', soil: 'Black Cotton', water: 'Moderate', seeds: '3kg/acre', yield: '10-12Q/acre', price: '₹6,080/Q', duration: '160-180 Days', pests: 'Pink Bollworm', profit: 'Very High', temp: '25-35°C', ph: '7.0-8.5', fertilizer: 'NPK 100:50:50' },
+            { id: 6, name: 'Maize', hi: 'मक्का', type: 'Kharif', soil: 'Well-drained Loam', water: 'Moderate', seeds: '8kg/acre', yield: '20-25Q/acre', price: '₹1,960/Q', duration: '90-110 Days', pests: 'Fall Armyworm', profit: 'Medium', temp: '18-27°C', ph: '6.0-7.0', fertilizer: 'NPK 120:60:40' },
+            { id: 7, name: 'Soybean', hi: 'सोयाबीन', type: 'Kharif', soil: 'Black/Loamy', water: 'Moderate', seeds: '30kg/acre', yield: '10-12Q/acre', price: '₹4,600/Q', duration: '90-100 Days', pests: 'Girdle Beetle', profit: 'High', temp: '20-30°C', ph: '6.5-7.5', fertilizer: 'NPK 20:60:40' },
+            { id: 8, name: 'Gram', hi: 'चना', type: 'Rabi', soil: 'Sandy Loam', water: 'Low', seeds: '35kg/acre', yield: '8-10Q/acre', price: '₹5,335/Q', duration: '110-120 Days', pests: 'Pod Borer', profit: 'High', temp: '15-25°C', ph: '6.0-7.5', fertilizer: 'NPK 20:40:20' },
+            { id: 9, name: 'Potato', hi: 'आलू', type: 'Rabi', soil: 'Sandy Loam', water: 'Regular', seeds: '10-12Q/acre', yield: '100-120Q/acre', price: '₹1,200/Q', duration: '90-100 Days', pests: 'Late Blight', profit: 'High', temp: '15-20°C', ph: '5.0-6.0', fertilizer: 'NPK 150:100:120' },
+            { id: 10, name: 'Tur (Arhar)', hi: 'अरहर', type: 'Kharif', soil: 'Red/Loamy', water: 'Low', seeds: '5kg/acre', yield: '6-8Q/acre', price: '₹7,000/Q', duration: '150-180 Days', pests: 'Pod Fly', profit: 'High', temp: '20-30°C', ph: '6.5-8.0', fertilizer: 'NPK 20:40:20' }
+        ];
+
+        const SCHEMES = [
+            { title: 'PM-Kisan Nidhi', desc: '₹6,000 annual direct benefit transfer in 3 installments.', link: '#' },
+            { title: 'Kisan Credit Card', desc: 'Low-interest institutional credit for farm requirements.', link: '#' },
+            { title: 'Soil Health Card', desc: 'Free testing of soil nutrients to optimize fertilizer use.', link: '#' }
+        ];
+
+        // --- Functions ---
+        function toggleLanguage() {
+            lang = lang === 'en' ? 'hi' : 'en';
+            document.getElementById('lang-btn').innerText = lang === 'en' ? 'हिंदी (HINDI)' : 'ENGLISH';
+            render();
+        }
+
+        function navigateTo(tabId, param = null) {
+            currentTab = tabId;
+            selectedCropId = param;
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active-nav'));
+            document.getElementById(`btn-${tabId}`)?.classList.add('active-nav');
+            window.scrollTo(0,0);
+            render();
+        }
+
+        function render() {
+            const content = document.getElementById('app-content');
+            content.innerHTML = '';
+
+            if (currentTab === 'home') renderHome(content);
+            else if (currentTab === 'intelligence') renderIntelligence(content);
+            else if (currentTab === 'mandi') renderMandi(content);
+            else if (currentTab === 'weather') renderWeather(content);
+            else if (currentTab === 'community') renderCommunity(content);
+            else if (currentTab === 'transport') renderTransport(content);
+            else if (currentTab === 'crop-detail') renderCropDetail(content, selectedCropId);
+
+            lucide.createIcons();
+        }
+
+        function renderHome(container) {
+            container.innerHTML = `
+                <section class="hero-gradient text-white py-20 px-4">
+                    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12">
+                        <div class="md:w-1/2 space-y-8">
+                            <h2 class="text-5xl md:text-7xl font-black leading-tight">
+                                ${t("Empowering Bharat's Hand that Feeds.", "भारत के अन्नदाता की शक्ति।")}
+                            </h2>
+                            <p class="text-xl opacity-80 leading-relaxed font-light">
+                                ${t("Access real-time Mandi rates, predictive weather, expert crop advisory, and community support in one simple platform.", "एक ही मंच पर वास्तविक समय मंडी दरें, मौसम पूर्वानुमान, विशेषज्ञ फसल परामर्श और सामुदायिक सहायता प्राप्त करें।")}
+                            </p>
+                            <div class="flex flex-wrap gap-4">
+                                <button onclick="navigateTo('intelligence')" class="bg-amber-400 text-emerald-950 px-8 py-4 rounded-xl font-bold text-lg hover:bg-white transition-all shadow-lg flex items-center gap-2 btn-interact">
+                                    ${t("Get Crop Advice", "फसल परामर्श लें")} <i data-lucide="arrow-right"></i>
+                                </button>
+                                <button onclick="navigateTo('mandi')" class="bg-white/10 border border-white/20 px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/20 transition-all flex items-center gap-2 btn-interact">
+                                    <i data-lucide="trending-up"></i> ${t("Check Live Rates", "लाइव भाव देखें")}
+                                </button>
+                            </div>
+                        </div>
+                        <div class="md:w-1/2 bg-white/10 p-8 rounded-3xl backdrop-blur-md border border-white/20 shadow-2xl relative">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="font-bold text-xl">${t("Today's Snapshot", "आज की स्थिति")}</h3>
+                                <span class="bg-emerald-500 text-[10px] px-2 py-1 rounded-full uppercase font-black tracking-widest">LIVE</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-white/10 p-4 rounded-2xl">
+                                    <p class="text-xs opacity-70 uppercase tracking-widest mb-1">Wheat Price</p>
+                                    <p class="text-2xl font-bold">₹2,180 <span class="text-emerald-400 text-xs">↑ 2%</span></p>
+                                </div>
+                                <div class="bg-white/10 p-4 rounded-2xl">
+                                    <p class="text-xs opacity-70 uppercase tracking-widest mb-1">Humidity</p>
+                                    <p class="text-2xl font-bold">65% <span class="text-amber-400 text-xs">High</span></p>
+                                </div>
+                                <div class="bg-white/10 p-4 rounded-2xl">
+                                    <p class="text-xs opacity-70 uppercase tracking-widest mb-1">Transport</p>
+                                    <p class="text-2xl font-bold">12 Trucks</p>
+                                </div>
+                                <div class="bg-white/10 p-4 rounded-2xl">
+                                    <p class="text-xs opacity-70 uppercase tracking-widest mb-1">Community</p>
+                                    <p class="text-2xl font-bold">45 New Posts</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="max-w-7xl mx-auto px-4 py-20">
+                    <div class="flex justify-between items-end mb-12">
+                        <div>
+                            <h3 class="text-3xl font-black text-emerald-950">${t("Government Schemes For You", "आपके लिए सरकारी योजनाएं")}</h3>
+                            <p class="text-emerald-600 font-medium">${t("Recommended based on your region: Maharashtra", "आपके क्षेत्र के आधार पर अनुशंसित: महाराष्ट्र")}</p>
+                        </div>
+                        <button class="text-emerald-700 font-bold hover:underline btn-interact">${t("See All Schemes", "सभी योजनाएं देखें")}</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        ${SCHEMES.map(s => `
+                            <div class="bg-white p-8 rounded-3xl border border-emerald-50 shadow-sm card-hover transition-all">
+                                <div class="bg-emerald-100 w-12 h-12 rounded-xl flex items-center justify-center text-emerald-700 mb-6">
+                                    <i data-lucide="file-text"></i>
+                                </div>
+                                <h4 class="text-xl font-bold mb-3 text-emerald-900">${s.title}</h4>
+                                <p class="text-slate-500 text-sm mb-6 leading-relaxed">${s.desc}</p>
+                                <a href="${s.link}" class="text-emerald-700 font-bold flex items-center gap-2 group btn-interact">
+                                    Apply Now <i data-lucide="chevron-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                                </a>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderIntelligence(container) {
+            container.innerHTML = `
+                <section class="bg-emerald-50 border-b border-emerald-100 py-12">
+                    <div class="max-w-7xl mx-auto px-4">
+                        <h2 class="text-4xl font-black text-emerald-950 mb-4">${t("Smart Crop Intelligence Hub", "स्मार्ट फसल सूचना केंद्र")}</h2>
+                        <p class="text-emerald-700 max-w-2xl">${t("Comprehensive data on over 10 major crops. Use our upgraded profitability & probability engine to decide what to sow next.", "10 प्रमुख फसलों पर व्यापक डेटा। आगे क्या बोना है, यह तय करने के लिए हमारे उन्नत लाभ और संभावना इंजन का उपयोग करें।")}</p>
+                    </div>
+                </section>
+
+                <section class="max-w-7xl mx-auto px-4 py-16 grid grid-cols-1 lg:grid-cols-4 gap-12">
+                    <!-- Probability Sidebar -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-white p-8 rounded-3xl shadow-xl border border-emerald-50 sticky top-24">
+                            <h4 class="font-bold text-lg mb-6 flex items-center gap-2"><i data-lucide="brain-circuit" class="text-emerald-600"></i> ${t("Yield Probability Engine", "पैदावार संभावना इंजन")}</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Crop Selection</label>
+                                    <select id="prob-crop" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 ring-emerald-500 transition-all">
+                                        ${CROPS.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Soil Type</label>
+                                    <select id="prob-soil" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 ring-emerald-500 transition-all">
+                                        <option>Black Soil</option>
+                                        <option>Alluvial</option>
+                                        <option>Clayey</option>
+                                        <option>Sandy Loam</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Water Access</label>
+                                    <select id="prob-water" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 ring-emerald-500 transition-all">
+                                        <option>Borewell</option>
+                                        <option>Canal</option>
+                                        <option>Rain-only</option>
+                                    </select>
+                                </div>
+                                <button onclick="calculateSuccessProbability()" class="w-full bg-emerald-700 text-white py-4 rounded-xl font-bold shadow-lg shadow-emerald-700/20 hover:bg-emerald-800 transition-all btn-interact">
+                                    Generate Growth Forecast
+                                </button>
+                            </div>
+
+                            <div id="prob-results" class="mt-8 hidden animate-in slide-in-from-top duration-500">
+                                <div class="h-48 w-full">
+                                    <canvas id="probChartCanvas"></canvas>
+                                </div>
+                                <p id="prob-summary" class="text-xs text-center mt-4 text-emerald-800 font-bold"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Crop Grid -->
+                    <div class="lg:col-span-3 space-y-8">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-2xl font-bold text-emerald-950">${t("Detailed Crop Library", "विस्तृत फसल पुस्तकालय")}</h3>
+                            <div class="flex gap-2">
+                                <span class="bg-emerald-100 text-emerald-700 text-xs px-3 py-1 rounded-full font-bold">Rabi</span>
+                                <span class="bg-amber-100 text-amber-700 text-xs px-3 py-1 rounded-full font-bold">Kharif</span>
+                                <span class="bg-indigo-100 text-indigo-700 text-xs px-3 py-1 rounded-full font-bold">Annual</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            ${CROPS.map(c => `
+                                <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 card-hover transition-all">
+                                    <div class="flex justify-between items-start mb-6">
+                                        <div>
+                                            <h4 class="text-2xl font-black text-emerald-900">${t(c.name, c.hi)}</h4>
+                                            <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-500">${c.type} Season</span>
+                                        </div>
+                                        <div class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">${c.profit} Profit</div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-y-4 text-sm">
+                                        <div>
+                                            <p class="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Soil</p>
+                                            <p class="font-bold">${c.soil}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Water Req.</p>
+                                            <p class="font-bold">${c.water}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Market Price</p>
+                                            <p class="font-bold text-emerald-700">${c.price}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Common Pests</p>
+                                            <p class="font-bold text-red-500">${c.pests}</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="navigateTo('crop-detail', ${c.id})" class="w-full mt-8 py-3 border border-emerald-100 text-emerald-700 rounded-xl font-bold hover:bg-emerald-50 transition-all btn-interact">View Full Guide</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </section>
+            `;
+        }
+
+        function calculateSuccessProbability() {
+            const cropId = document.getElementById('prob-crop').value;
+            const crop = CROPS.find(c => c.id == cropId);
+            const soil = document.getElementById('prob-soil').value;
+            const water = document.getElementById('prob-water').value;
+
+            // Simple logic for demonstration
+            let score = 70;
+            if (water === 'Borewell') score += 15;
+            if (water === 'Rain-only') score -= 20;
+            if (soil === 'Alluvial' && crop.name === 'Wheat') score += 10;
+            
+            document.getElementById('prob-results').classList.remove('hidden');
+            document.getElementById('prob-summary').innerText = `Probability of high yield: ${score}%`;
+
+            setTimeout(() => {
+                const ctx = document.getElementById('probChartCanvas').getContext('2d');
+                if (probChart) probChart.destroy();
+                probChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Success', 'Risk'],
+                        datasets: [{
+                            data: [score, 100 - score],
+                            backgroundColor: ['#059669', '#FEE2E2'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }, 50);
+        }
+
+        function renderCropDetail(container, cropId) {
+            const crop = CROPS.find(c => c.id == cropId);
+            container.innerHTML = `
+                <section class="max-w-5xl mx-auto px-4 py-20">
+                    <button onclick="navigateTo('intelligence')" class="flex items-center gap-2 text-emerald-700 font-bold mb-8 hover:underline btn-interact">
+                        <i data-lucide="arrow-left"></i> Back to Intelligence Hub
+                    </button>
+                    
+                    <div class="bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-emerald-50">
+                        <div class="hero-gradient p-12 text-white">
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <h2 class="text-6xl font-black mb-2">${crop.name} <span class="text-3xl font-light opacity-50">(${crop.hi})</span></h2>
+                                    <p class="text-amber-400 font-bold tracking-widest uppercase">${crop.type} Sowing Cycle</p>
+                                </div>
+                                <div class="bg-white/20 backdrop-blur px-6 py-4 rounded-3xl text-right">
+                                    <p class="text-xs opacity-70 uppercase tracking-widest">Market Status</p>
+                                    <p class="text-2xl font-bold">${crop.price}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-12 grid grid-cols-1 md:grid-cols-3 gap-12">
+                            <div class="md:col-span-2 space-y-12">
+                                <div>
+                                    <h3 class="text-2xl font-black text-emerald-950 mb-8 border-l-4 border-amber-400 pl-4">Month-by-Month Cultivation Roadmap</h3>
+                                    <div class="space-y-6">
+                                        ${(crop.guide || []).map((g, i) => `
+                                            <div class="flex gap-6 items-start">
+                                                <div class="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold flex-shrink-0">${i+1}</div>
+                                                <div>
+                                                    <h4 class="font-bold text-lg text-emerald-900">${g.step}</h4>
+                                                    <p class="text-slate-500">${g.desc}</p>
+                                                </div>
+                                            </div>
+                                        `).join('') || '<p class="text-slate-400 italic">Detailed roadmap coming soon for this variety.</p>'}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 class="text-2xl font-black text-emerald-950 mb-6 border-l-4 border-emerald-400 pl-4">Fertilizer Dose (Recommended)</h3>
+                                    <div class="bg-emerald-50 p-8 rounded-[2rem] border border-emerald-100 flex items-center justify-around text-center">
+                                        <div><p class="text-xs uppercase text-slate-400 mb-1">Nitrogen</p><p class="text-xl font-bold text-emerald-700">120 kg/Ha</p></div>
+                                        <div class="w-px h-10 bg-emerald-200"></div>
+                                        <div><p class="text-xs uppercase text-slate-400 mb-1">Phosphorus</p><p class="text-xl font-bold text-emerald-700">60 kg/Ha</p></div>
+                                        <div class="w-px h-10 bg-emerald-200"></div>
+                                        <div><p class="text-xs uppercase text-slate-400 mb-1">Potash</p><p class="text-xl font-bold text-emerald-700">40 kg/Ha</p></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-8">
+                                <div class="bg-slate-50 p-8 rounded-[2rem] border border-slate-100">
+                                    <h4 class="font-black text-slate-400 uppercase text-xs tracking-widest mb-6 text-center">Ideal Environment</h4>
+                                    <div class="space-y-4">
+                                        <div class="flex justify-between items-center text-sm"><span class="font-bold">Temperature</span><span class="text-emerald-700 font-bold">${crop.temp || '20-30°C'}</span></div>
+                                        <div class="flex justify-between items-center text-sm"><span class="font-bold">Soil pH</span><span class="text-emerald-700 font-bold">${crop.ph || '6.5-7.5'}</span></div>
+                                        <div class="flex justify-between items-center text-sm"><span class="font-bold">Avg. Seed Depth</span><span class="text-emerald-700 font-bold">5-7 cm</span></div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-amber-50 p-8 rounded-[2rem] border border-amber-100">
+                                    <h4 class="font-bold text-amber-900 mb-4 flex items-center gap-2 text-sm"><i data-lucide="alert-triangle" class="w-4 h-4"></i> Critical Pests</h4>
+                                    <p class="text-sm text-amber-800 leading-relaxed font-medium">Watch out for <span class="font-bold text-red-600">${crop.pests}</span>. High humidity after week 4 increases risk. Apply Organic Neem Spray immediately if spotted.</p>
+                                </div>
+
+                                <button class="w-full bg-emerald-950 text-white py-5 rounded-3xl font-bold shadow-xl flex items-center justify-center gap-3 btn-interact">
+                                    <i data-lucide="download" class="w-5 h-5"></i> Download PDF Guide
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderWeather(container) {
+            container.innerHTML = `
+                <section class="bg-sky-600 py-20 text-white">
+                    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-12">
+                        <div class="md:w-1/2 space-y-6">
+                            <h2 class="text-5xl font-black leading-tight">${t("Real-Time Weather Intelligence", "वास्तविक समय मौसम सूचना")}</h2>
+                            <p class="text-lg opacity-80">${t("Hyper-local weather data focused on agricultural parameters like Humidity, Soil Moisture, and UV Intensity.", "आर्द्रता, मिट्टी की नमी और यूवी तीव्रता जैसे कृषि मापदंडों पर केंद्रित हाइपर-लोकल मौसम डेटा।")}</p>
+                        </div>
+                        <div class="md:w-1/3 bg-white/20 backdrop-blur-xl p-8 rounded-3xl border border-white/30 text-center">
+                            <i data-lucide="cloud-sun" class="w-20 h-20 mx-auto mb-4 text-amber-300"></i>
+                            <h3 class="text-6xl font-black">32°C</h3>
+                            <p class="text-xl font-bold mt-2 uppercase tracking-widest">Partly Cloudy</p>
+                            <div class="mt-6 pt-6 border-t border-white/20 grid grid-cols-3 text-xs opacity-70">
+                                <div><p>Precip</p><p class="font-bold">5%</p></div>
+                                <div><p>UV Index</p><p class="font-bold text-amber-300">High</p></div>
+                                <div><p>Wind</p><p class="font-bold">12km/h</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="max-w-7xl mx-auto px-4 -mt-12">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-50 flex flex-col items-center text-center">
+                            <div class="bg-sky-100 p-4 rounded-2xl text-sky-600 mb-4"><i data-lucide="droplets"></i></div>
+                            <h4 class="font-bold text-slate-400 uppercase text-[10px] tracking-widest">Humidity</h4>
+                            <p class="text-3xl font-black text-slate-800 mt-1">68%</p>
+                            <p class="text-xs text-emerald-500 font-bold mt-2">${t("Good for Rabi", "रबी के लिए अच्छा है")}</p>
+                        </div>
+                        <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-50 flex flex-col items-center text-center">
+                            <div class="bg-amber-100 p-4 rounded-2xl text-amber-600 mb-4"><i data-lucide="sun"></i></div>
+                            <h4 class="font-bold text-slate-400 uppercase text-[10px] tracking-widest">Visibility</h4>
+                            <p class="text-3xl font-black text-slate-800 mt-1">10 km</p>
+                            <p class="text-xs text-slate-400 font-bold mt-2">${t("Clear Skies", "साफ़ आसमान")}</p>
+                        </div>
+                        <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-50 flex flex-col items-center text-center">
+                            <div class="bg-emerald-100 p-4 rounded-2xl text-emerald-600 mb-4"><i data-lucide="thermometer"></i></div>
+                            <h4 class="font-bold text-slate-400 uppercase text-[10px] tracking-widest">Soil Moisture</h4>
+                            <p class="text-3xl font-black text-slate-800 mt-1">45%</p>
+                            <p class="text-xs text-red-400 font-bold mt-2">${t("Watering Suggested", "सिंचाई का सुझाव")}</p>
+                        </div>
+                        <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-50 flex flex-col items-center text-center">
+                            <div class="bg-purple-100 p-4 rounded-2xl text-purple-600 mb-4"><i data-lucide="wind"></i></div>
+                            <h4 class="font-bold text-slate-400 uppercase text-[10px] tracking-widest">Wind Direction</h4>
+                            <p class="text-3xl font-black text-slate-800 mt-1">NW 5km</p>
+                            <p class="text-xs text-slate-400 font-bold mt-2">${t("Steady Breeze", "स्थिर हवा")}</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="max-w-7xl mx-auto px-4 py-20">
+                    <h3 class="text-2xl font-black text-emerald-950 mb-8">${t("7-Day Farming Outlook", "7-दिवसीय कृषि दृष्टिकोण")}</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-7 gap-4">
+                        ${[1,2,3,4,5,6,7].map(i => `
+                            <div class="bg-white p-6 rounded-2xl border border-slate-50 shadow-sm text-center card-hover transition-all">
+                                <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Day ${i}</p>
+                                <i data-lucide="${i % 3 === 0 ? 'cloud-rain' : 'sun'}" class="w-10 h-10 mx-auto ${i % 3 === 0 ? 'text-sky-500' : 'text-amber-500'} mb-4"></i>
+                                <p class="text-xl font-bold">34° <span class="text-sm font-normal text-slate-400">/ 22°</span></p>
+                                <p class="text-[10px] font-bold mt-3 text-emerald-600 uppercase">Spraying OK</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderMandi(container) {
+            container.innerHTML = `
+                <section class="max-w-7xl mx-auto px-4 py-16">
+                    <div class="flex flex-col lg:flex-row gap-12">
+                        <div class="lg:w-2/3 space-y-8">
+                            <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-emerald-950/5 border border-slate-50">
+                                <div class="flex justify-between items-start mb-8">
+                                    <div>
+                                        <h3 class="text-3xl font-black text-emerald-950">Wheat (Mustard Variety)</h3>
+                                        <p class="text-slate-400 font-bold uppercase text-xs tracking-widest">National Average Trend (7 Days)</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-4xl font-black text-emerald-700">₹2,180</p>
+                                        <p class="text-emerald-500 font-bold flex items-center gap-1 justify-end">
+                                            <i data-lucide="arrow-up-right" class="w-4 h-4"></i> +₹45.00
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="h-[400px] w-full">
+                                    <canvas id="mandiChartBig"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="bg-emerald-900 text-white p-8 rounded-3xl">
+                                    <h4 class="text-xl font-bold mb-4">Best Market Today</h4>
+                                    <p class="text-amber-400 text-4xl font-black mb-2">Hapur Mandi</p>
+                                    <p class="opacity-70 text-sm">Selling at ₹2,240/Q. That's ₹60 higher than your local mandi. Recommended transport: shared truck.</p>
+                                    <button class="mt-6 bg-amber-400 text-emerald-950 px-6 py-3 rounded-xl font-bold text-sm btn-interact">Get Directions</button>
+                                </div>
+                                <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                                    <h4 class="text-xl font-bold text-emerald-950 mb-4">Smart Prediction</h4>
+                                    <p class="text-slate-500 text-sm leading-relaxed mb-4">Our AI predicts a 4% dip in prices next week due to high supply from northern states. Recommended: <span class="text-emerald-700 font-bold underline">SELL NOW</span>.</p>
+                                    <div class="flex items-center gap-2 text-emerald-600 font-bold text-xs uppercase tracking-widest">
+                                        <i data-lucide="shield-check"></i> Expert Verified
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lg:w-1/3 space-y-8">
+                            <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-50">
+                                <h4 class="font-bold text-xl mb-6">${t("Regional Price Watch", "क्षेत्रीय मूल्य निगरानी")}</h4>
+                                <div class="space-y-6">
+                                    ${['Indore', 'Bhopal', 'Nagpur', 'Latur', 'Nashik'].map(city => `
+                                        <div class="flex justify-between items-center border-b border-slate-50 pb-4">
+                                            <div>
+                                                <p class="font-bold text-emerald-900">${city} Mandi</p>
+                                                <p class="text-[10px] font-bold text-slate-400">UPDATING NOW</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="font-black text-slate-800">₹2,${Math.floor(Math.random()*100)+100}</p>
+                                                <p class="text-[10px] ${Math.random() > 0.5 ? 'text-emerald-500' : 'text-red-400'} font-bold">${Math.random() > 0.5 ? '↑' : '↓'} 1.2%</p>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <button class="w-full mt-6 py-4 bg-emerald-50 text-emerald-700 rounded-2xl font-bold hover:bg-emerald-100 transition-all uppercase tracking-widest text-xs btn-interact">View 100+ More</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            `;
+
+            setTimeout(() => {
+                const ctx = document.getElementById('mandiChartBig').getContext('2d');
+                if (chartInstance) chartInstance.destroy();
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Price in ₹',
+                            data: [2100, 2120, 2115, 2145, 2155, 2170, 2180],
+                            borderColor: '#059669',
+                            backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 5,
+                            pointRadius: 6,
+                            pointHoverRadius: 10,
+                            pointBackgroundColor: '#059669'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { grid: { borderDash: [5, 5] }, ticks: { font: { weight: 'bold' } } },
+                            x: { grid: { display: false }, ticks: { font: { weight: 'bold' } } }
+                        }
+                    }
+                });
+            }, 100);
+        }
+
+        function renderCommunity(container) {
+            container.innerHTML = `
+                <section class="max-w-7xl mx-auto px-4 py-20">
+                    <div class="flex flex-col lg:flex-row gap-12">
+                        <div class="lg:w-3/4 space-y-12">
+                            <div class="flex justify-between items-center bg-white p-8 rounded-[2rem] shadow-sm border border-emerald-50">
+                                <div>
+                                    <h2 class="text-4xl font-black text-emerald-950">${t("Farmer Chaupal", "किसान चौपाल")}</h2>
+                                    <p class="text-slate-400 font-medium">Join 2.5 Lakh farmers discussing cultivation today.</p>
+                                </div>
+                                <button class="bg-emerald-700 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-emerald-700/20 flex items-center gap-2 btn-interact">
+                                    <i data-lucide="plus"></i> ${t("Ask Question", "प्रश्न पूछें")}
+                                </button>
+                            </div>
+
+                            <div class="space-y-8">
+                                ${[1, 2, 3, 4, 5].map(i => `
+                                    <div class="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-50 card-hover transition-all group">
+                                        <div class="flex justify-between items-center mb-6">
+                                            <div class="flex items-center gap-4">
+                                                <div class="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-700 font-black text-xl">
+                                                    ${['RK', 'SM', 'AP', 'DV', 'NP'][i-1]}
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-bold text-emerald-950 text-lg">${['Rajesh Kumar', 'Shivani Mishra', 'Anil Patil', 'Dinesh Verma', 'Nitin Pawar'][i-1]}</h4>
+                                                    <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Village: ${['Latur', 'Patna', 'Sangli', 'Hapur', 'Nashik'][i-1]}, India • ${i*2} Hours Ago</p>
+                                                </div>
+                                            </div>
+                                            <span class="bg-emerald-50 text-emerald-700 text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest">${['Crop Advisory', 'Organic Help', 'Mandi Talk', 'Fertilizer', 'Weather Alert'][i-1]}</span>
+                                        </div>
+                                        <h3 class="text-2xl font-bold text-emerald-900 mb-4 leading-tight">
+                                            ${[
+                                                "My wheat leaves are turning yellow from the edges. Is it a nutrient deficiency?",
+                                                "Looking for the best organic pesticide for Rice stem borer. Any suggestions?",
+                                                "Is anyone else seeing a drop in Potato prices in Indore mandi today?",
+                                                "When is the ideal time to apply the first dose of Urea for Rabi Sugarcane?",
+                                                "Alert! Massive rain forecast for western Maharashtra next week. Is it safe to sow?"
+                                            ][i-1]}
+                                        </h3>
+                                        <p class="text-slate-600 leading-relaxed mb-8">
+                                            ${[
+                                                "I used DAP 15 days ago. Soil moisture is normal. Need help from experts on what spray to use next.",
+                                                "I want to avoid chemical sprays this season. Has anyone tried Neem oil mixed with soap water successfully?",
+                                                "Local traders are quoting ₹1000/Q but official mandi rate shows ₹1250. How to report this discrepancy?",
+                                                "Field is 45 days old. Irrigation was done last week. Looking for dosage per acre.",
+                                                "Met department is predicting high winds. I am worried about lodging in my tall standing crops."
+                                            ][i-1]}
+                                        </p>
+                                        <div class="flex flex-wrap items-center gap-6 pt-8 border-t border-slate-50">
+                                            <button class="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-emerald-600 transition-all btn-interact active:text-emerald-700"><i data-lucide="thumbs-up"></i> ${40 + i*10} Helpful</button>
+                                            <button class="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-emerald-600 transition-all btn-interact"><i data-lucide="message-circle"></i> ${5 + i*3} Answers</button>
+                                            <button class="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-amber-600 transition-all btn-interact"><i data-lucide="share-2"></i> Share</button>
+                                            ${i === 1 ? `
+                                            <div class="ml-auto flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-xl text-xs font-bold animate-pulse">
+                                                <i data-lucide="check-circle" class="w-4 h-4"></i> Expert Answered
+                                            </div>` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="lg:w-1/4 space-y-12">
+                            <div class="bg-emerald-950 text-white p-10 rounded-[2.5rem] shadow-2xl">
+                                <h4 class="text-xl font-bold mb-6">${t("Top Experts Online", "ऑनलाइन शीर्ष विशेषज्ञ")}</h4>
+                                <div class="space-y-6">
+                                    ${['Dr. Manoj Patil', 'Agri-Expert Sunita', 'Dr. Verma', 'Prof. Ghanshyam'].map(name => `
+                                        <div class="flex items-center gap-4 group cursor-pointer">
+                                            <div class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-amber-400 group-hover:text-emerald-950 transition-all"><i data-lucide="user"></i></div>
+                                            <div>
+                                                <p class="font-bold text-sm">${name}</p>
+                                                <p class="text-[10px] text-amber-400 font-bold uppercase tracking-widest">Available Now</p>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <button class="w-full mt-8 py-3 bg-white/10 border border-white/20 rounded-xl text-xs font-bold uppercase btn-interact">Message Expert</button>
+                            </div>
+                            
+                            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-50">
+                                <h4 class="font-bold text-emerald-900 mb-6 uppercase text-[10px] tracking-widest">Active Channels</h4>
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex justify-between items-center p-3 hover:bg-emerald-50 rounded-xl transition-all cursor-pointer group">
+                                        <span class="text-sm font-bold text-slate-500 group-hover:text-emerald-700">#RabiSowing</span>
+                                        <span class="text-[10px] bg-slate-100 px-2 py-1 rounded-full">1.2k</span>
+                                    </div>
+                                    <div class="flex justify-between items-center p-3 hover:bg-emerald-50 rounded-xl transition-all cursor-pointer group">
+                                        <span class="text-sm font-bold text-slate-500 group-hover:text-emerald-700">#OrganicWheat</span>
+                                        <span class="text-[10px] bg-slate-100 px-2 py-1 rounded-full">850</span>
+                                    </div>
+                                    <div class="flex justify-between items-center p-3 hover:bg-emerald-50 rounded-xl transition-all cursor-pointer group">
+                                        <span class="text-sm font-bold text-slate-500 group-hover:text-emerald-700">#PestAlert</span>
+                                        <span class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">LIVE</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderTransport(container) {
+            container.innerHTML = `
+                <section class="max-w-7xl mx-auto px-4 py-20">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                        <div class="space-y-10">
+                            <h2 class="text-5xl font-black text-emerald-950 leading-tight">${t("Farm-to-Mandi Logistics", "खेत से मंडी तक का वाहन")}</h2>
+                            <p class="text-xl text-slate-500 leading-relaxed">${t("Don't pay full price for a half-empty truck. Join our shared transport network and save up to 40% on logistics costs.", "खाली ट्रक के लिए पूरा पैसा न दें। हमारे साझा परिवहन नेटवर्क से जुड़ें और रसद लागत पर 40% तक बचाएं।")}</p>
+                            
+                            <div class="bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-50 space-y-6">
+                                <h3 class="text-2xl font-bold text-emerald-900">${t("Book Your Slot", "अपना स्लॉट बुक करें")}</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Pickup Location</label>
+                                        <input type="text" placeholder="Your Farm Village" class="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-emerald-500">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Target Mandi</label>
+                                        <input type="text" placeholder="e.g. Nashik" class="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-emerald-500">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Crop Weight (Quintal)</label>
+                                        <input type="number" placeholder="e.g. 50" class="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-emerald-500">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Preferred Date</label>
+                                        <input type="date" class="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-emerald-500">
+                                    </div>
+                                </div>
+                                <button class="w-full bg-emerald-700 text-white py-5 rounded-2xl font-black shadow-xl shadow-emerald-700/20 hover:bg-emerald-800 transition-all uppercase tracking-widest btn-interact">Estimate Price & Find Trucks</button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-8">
+                            <h3 class="text-2xl font-black text-emerald-950">${t("Active Shared Routes", "सक्रिय साझा रूट")}</h3>
+                            ${[1, 2, 3].map(i => `
+                                <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-50 flex justify-between items-center card-hover transition-all">
+                                    <div class="flex items-center gap-6">
+                                        <div class="bg-emerald-100 p-4 rounded-2xl text-emerald-700"><i data-lucide="truck"></i></div>
+                                        <div>
+                                            <p class="font-black text-emerald-950">Latur → Pune Mandi</p>
+                                            <p class="text-xs text-slate-400 font-bold">Space: <span class="text-emerald-600">40 Quintals Left</span> • Starts in 4h</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-2xl font-black text-emerald-700">₹140<span class="text-[10px] font-normal text-slate-400">/Q</span></p>
+                                        <button class="text-xs font-bold text-white bg-emerald-950 px-4 py-2 rounded-lg mt-2 uppercase tracking-widest btn-interact">Join Route</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </section>
+            `;
+        }
+
+        // Initialize
+        window.onload = () => {
+            render();
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>
