@@ -11,13 +11,7 @@ if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
     throw new Error("PORT must be an integer between 1 and 65535.");
 }
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-const CATEGORIES = new Set([
-    "Cardboard",
-    "Plastic Bottle",
-    "Polythene Bag",
-    "Paper",
-    "Other / Unknown"
-]);
+const CATEGORIES = new Set(["Plastic", "Paper", "Metal"]);
 
 function sendJson(response, statusCode, data) {
     response.writeHead(statusCode, {
@@ -123,7 +117,7 @@ async function identifyImage(request, response) {
                     content: [
                         {
                             type: "text",
-                            text: "Identify the main visible waste item in this image. Choose exactly one category from Cardboard, Plastic Bottle, Polythene Bag, Paper, or Other / Unknown. Only identify an item when it is clearly visible; use Other / Unknown if the image is unclear, contains no waste, or does not clearly match a category. Do not estimate weight, value, or confidence. Return only a JSON object with boolean field identified and string field category."
+                            text: "Analyze the entire image and identify every clearly visible recyclable waste material among Plastic, Paper, and Metal. Include all applicable categories, not just the main item: return only Plastic for an image with only plastic, Plastic and Paper when both are visible, and all three when all are visible. Do not infer materials that are not clearly visible. If none of these materials can be clearly identified, return an empty categories array. Never estimate weight or value. Return only a JSON object with a categories array containing unique strings from Plastic, Paper, and Metal."
                         },
                         {
                             type: "image_url",
@@ -134,7 +128,7 @@ async function identifyImage(request, response) {
                     ]
                 }],
                 temperature: 0,
-                max_completion_tokens: 100,
+                max_completion_tokens: 120,
                 response_format: { type: "json_object" }
             })
         });
@@ -160,16 +154,19 @@ async function identifyImage(request, response) {
         return;
     }
 
-    if (typeof result.identified !== "boolean" || !CATEGORIES.has(result.category)) {
+    if (!result || typeof result !== "object" || Array.isArray(result)
+        || !Array.isArray(result.categories)
+        || result.categories.some(category => typeof category !== "string" || !CATEGORIES.has(category))
+        || new Set(result.categories).size !== result.categories.length) {
         console.error("Groq response did not match the expected category schema.");
         sendJson(response, 502, { error: "Image identification returned an invalid result. Please try again." });
         return;
     }
 
-    const identified = result.identified && result.category !== "Other / Unknown";
+    const categories = [...CATEGORIES].filter(category => result.categories.includes(category));
     sendJson(response, 200, {
-        identified,
-        category: identified ? result.category : "Other / Unknown"
+        identified: categories.length > 0,
+        categories
     });
 }
 

@@ -610,6 +610,21 @@
             color: #fff;
         }
 
+        .pickup-category-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .pickup-category-option input {
+            accent-color: var(--neon-green);
+        }
+
         .sidebar-backdrop {
             display: none;
         }
@@ -1312,10 +1327,15 @@
             <div id="scannerResult" hidden style="width:100%; text-align:center; margin-top:12px;">
                 <h3 id="identifiedCategory" style="color:#fff; margin:0 0 8px;"></h3>
                 <p id="identifiedRate" style="color:var(--text-muted);"></p>
-                <p id="identifiedEstimateNote" style="color:var(--text-muted); font-size:.85rem; margin-top:6px;">Estimated rate only. Reward is calculated after the collection partner records actual weight.</p>
+                <p style="color:var(--text-muted); font-size:.85rem; margin-top:6px;">Estimated rate per kg only. Final payment is calculated after the collection partner records actual weight.</p>
+            </div>
+            <div class="form-group" style="width:100%;margin-top:14px;">
+                <label class="form-label" for="scannerPickupAddress">Pickup address/location</label>
+                <input class="form-input" id="scannerPickupAddress" type="text" maxlength="300"
+                    autocomplete="street-address" placeholder="Enter the pickup address">
             </div>
             <div class="scanner-actions" id="scannerResultActions" hidden>
-                <button class="scanner-button primary" id="confirmScanButton" type="button" onclick="confirmScan()">Confirm category &amp; request collection</button>
+                <button class="scanner-button primary" id="confirmScanButton" type="button" onclick="confirmScan()">Request collection</button>
                 <button class="scanner-button" type="button" onclick="resetScanner()">Scan another image</button>
             </div>
             <button class="scanner-button" type="button" onclick="closeScanner()" style="margin-top:12px;">Close scanner</button>
@@ -1559,38 +1579,21 @@
 
             <div class="card col-span-2 row-span-2">
                 <h3 class="card-title" style="color: #fff; font-size: 1.1rem;">Submit Waste for Pickup</h3>
-                <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:16px;">These are your pickup estimates, not measured weights. A collection partner records the actual weight.</p>
-                <div class="inventory-item">
-                    <div class="inv-header">
-                        <span style="display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-bottle-water"
-                                style="color: var(--neon-teal);"></i> PET Bottles</span>
-                        <span id="valPet">0 kg</span>
-                    </div>
-                    <input type="range" class="inv-slider" min="0" max="100" value="0"
-                        oninput="updateSellEst('Pet', this.value)">
+                <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:16px;">Select the materials for pickup. The collection partner records actual weight at pickup.</p>
+                <div style="display:grid;gap:10px;">
+                    <label class="pickup-category-option"><input type="checkbox" onchange="updateSellSelection('Pet', this.checked)"> PET Bottles</label>
+                    <label class="pickup-category-option"><input type="checkbox" onchange="updateSellSelection('Bag', this.checked)"> Plastic Bags</label>
+                    <label class="pickup-category-option"><input type="checkbox" onchange="updateSellSelection('Box', this.checked)"> Cardboard</label>
                 </div>
-                <div class="inventory-item">
-                    <div class="inv-header">
-                        <span style="display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-bag-shopping"
-                                style="color: var(--neon-teal);"></i> Plastic Bags</span>
-                        <span id="valBag">0 kg</span>
-                    </div>
-                    <input type="range" class="inv-slider" min="0" max="50" value="0"
-                        oninput="updateSellEst('Bag', this.value)">
-                </div>
-                <div class="inventory-item">
-                    <div class="inv-header">
-                        <span style="display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-box"
-                                style="color: var(--neon-teal);"></i> Cardboard</span>
-                        <span id="valBox">0 kg</span>
-                    </div>
-                    <input type="range" class="inv-slider" min="0" max="200" value="0"
-                        oninput="updateSellEst('Box', this.value)">
-                </div>
-                <div style="margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                <div style="margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                         <span style="color: var(--text-muted);">Categories selected for pickup:</span>
                         <span style="font-weight: 700; font-size: 1.2rem; color: #fff;" id="selectedPickupCount">0</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="pickupAddressInput">Pickup address/location</label>
+                        <input class="form-input" id="pickupAddressInput" type="text" maxlength="300"
+                            autocomplete="street-address" placeholder="Enter the pickup address">
                     </div>
                     <button onclick="processSale()"
                         style="width: 100%; padding: 15px; background: linear-gradient(90deg, var(--neon-green), #22d3ee); border: none; border-radius: 12px; color: #0b1120; font-weight: 800; cursor: pointer;">REQUEST
@@ -1750,7 +1753,7 @@
         <div id="view-history" class="dashboard-grid view-section hidden">
             <div class="card col-span-4">
                 <h3 class="card-title" style="color:#fff;">Your activity history</h3>
-                <p style="color:var(--text-muted);font-size:.85rem;">Photo scans and collection requests are saved on this device. Rewards remain estimates until actual weight and reward are confirmed; no money is transferred by this demo.</p>
+                <p style="color:var(--text-muted);font-size:.85rem;">Photo scans and collection requests are saved on this device. Final payment is calculated after actual weight is recorded; no money is transferred by this demo.</p>
             </div>
             <div id="historyNotice" class="card col-span-4" role="status" hidden></div>
             <div id="historyList" class="dashboard-grid col-span-4" style="grid-column:span 4;gap:16px;"></div>
@@ -1762,16 +1765,18 @@
         // --- LOGIC ---
         let cash = 0;
         let coins = 850;
-        let sellData = { Pet: 0, Bag: 0, Box: 0 };
+        let sellData = { Pet: false, Bag: false, Box: false };
         const prices = { Pet: 15, Bag: 8, Box: 6 };
         const categoryRates = {
             "Cardboard": 6,
             "Plastic Bottle": 15,
             "Polythene Bag": 8,
-            "Paper": 10
+            "Plastic": 20,
+            "Paper": 10,
+            "Metal": 30
         };
         const historyStorageKey = "greenLinkActivities";
-        const allowedCategories = new Set(["Cardboard", "Plastic Bottle", "Polythene Bag", "Paper"]);
+        const allowedCategories = new Set(["Plastic", "Paper", "Metal"]);
         let historyReadFailed = false;
         let activities = loadActivities();
         let pendingScan = null;
@@ -2004,16 +2009,28 @@
                 if (!response.ok) {
                     throw new Error(result.error || `Image identification failed (HTTP ${response.status}).`);
                 }
-                if (!result.identified || !allowedCategories.has(result.category)) {
-                    setScannerStatus('Unable to identify waste. Please upload a clearer image.', true);
+                if (!Array.isArray(result.categories)) {
+                    if (typeof result.category === 'string') {
+                        throw new Error('The scanner backend is outdated. Deploy the latest server.js to Render, then try again.');
+                    }
+                    throw new Error('The scanner returned an invalid category list. Please try again.');
+                }
+                if (result.categories.some(category => !allowedCategories.has(category))
+                    || new Set(result.categories).size !== result.categories.length) {
+                    throw new Error('The scanner returned an invalid category list. Please try again.');
+                }
+                if (result.categories.length === 0) {
+                    setScannerStatus('No plastic, paper, or metal was clearly identified. Try a closer, well-lit photo of the waste.', true);
                     document.getElementById('scannerActions').hidden = false;
                     return;
                 }
 
-                pendingScan = { category: result.category, imageName: file.name };
-                document.getElementById('identifiedCategory').textContent = result.category;
+                const categories = [...allowedCategories].filter(category => result.categories.includes(category));
+                const averageRate = Number((categories.reduce((total, category) => total + categoryRates[category], 0) / categories.length).toFixed(2));
+                pendingScan = { categories, averageRate, imageName: file.name };
+                document.getElementById('identifiedCategory').textContent = `Detected: ${categories.join(', ')}`;
                 document.getElementById('identifiedRate').textContent =
-                    `Estimated rate: ${formatINR(categoryRates[result.category])} per kg`;
+                    `Estimated average rate: ${formatINR(averageRate)} per kg`;
                 document.getElementById('scannerResult').hidden = false;
                 document.getElementById('scannerResultActions').hidden = false;
                 setScannerStatus('Review the category and rate estimate before requesting collection.');
@@ -2029,16 +2046,25 @@
 
         function confirmScan() {
             if (!pendingScan) return;
+            const pickupLocation = document.getElementById('scannerPickupAddress').value.trim();
+            if (!pickupLocation) {
+                setScannerStatus('Enter the pickup address before requesting collection.', true);
+                document.getElementById('scannerPickupAddress').focus();
+                return;
+            }
             const confirmButton = document.getElementById('confirmScanButton');
             confirmButton.disabled = true;
             const activity = {
                 id: createActivityId(),
                 source: 'Photo scan',
                 imageName: pendingScan.imageName,
-                category: pendingScan.category,
+                category: pendingScan.categories.join(', '),
+                categories: pendingScan.categories,
+                averageRate: pendingScan.averageRate,
+                pickupLocation,
                 requestedWeight: null,
                 actualWeight: null,
-                estimatedReward: null,
+                finalPayment: null,
                 confirmedReward: null,
                 status: 'Collection requested',
                 createdAt: new Date().toISOString()
@@ -2184,18 +2210,23 @@
 
             const date = new Date(activity.createdAt);
             const dateText = Number.isNaN(date.getTime()) ? 'Date unavailable' : date.toLocaleString();
-            const rewardText = activity.confirmedReward != null
+            const rewardText = activity.finalPayment != null
+                ? `Final payment: ${formatINR(activity.finalPayment)} (not paid)`
+                : activity.confirmedReward != null
                 ? `Confirmed reward: ${formatINR(activity.confirmedReward)} (not transferred)`
                 : activity.estimatedReward != null
                     ? `Estimated reward: ${formatINR(activity.estimatedReward)}`
-                    : 'Available after actual weight is recorded';
+                    : 'Calculated after actual weight is recorded';
             const requestedText = activity.requestedWeight != null
                 ? `${activity.requestedWeight} kg (request estimate)`
                 : 'Not recorded';
+            const averageRate = Number(activity.averageRate) || categoryRates[activity.category];
             const details = document.createElement('div');
             details.className = 'history-details';
             details.append(
                 createDetail('Photo / request', activity.imageName || activity.source || 'Collection request'),
+                createDetail('Pickup address', activity.pickupLocation || 'Not recorded'),
+                createDetail('Estimated rate', averageRate ? `${formatINR(averageRate)} per kg` : 'Not configured'),
                 createDetail('Pickup estimate', requestedText),
                 createDetail('Actual collection weight', activity.actualWeight != null ? `${activity.actualWeight} kg` : 'Not recorded by partner'),
                 createDetail('Reward', rewardText),
@@ -2224,7 +2255,7 @@
                 button.textContent = 'Record weight';
                 partnerForm.append(label, input, button);
                 card.appendChild(partnerForm);
-            } else if (activity.estimatedReward != null && activity.confirmedReward == null) {
+            } else if (activity.finalPayment == null && activity.estimatedReward != null && activity.confirmedReward == null) {
                 const confirmation = document.createElement('div');
                 confirmation.className = 'history-controls';
                 const note = document.createElement('span');
@@ -2310,7 +2341,8 @@
             if (button.dataset.action === 'record-weight') {
                 const input = card.querySelector('[data-partner-weight]');
                 const actualWeight = Number(input.value);
-                if (!categoryRates[activity.category]) {
+                const averageRate = Number(activity.averageRate) || categoryRates[activity.category];
+                if (!Number.isFinite(averageRate) || averageRate <= 0) {
                     setHistoryNotice('This category does not have a configured recycling rate.');
                     return;
                 }
@@ -2318,11 +2350,12 @@
                     setHistoryNotice('Enter an actual collection weight greater than 0 and no more than 10,000 kg.');
                     return;
                 }
-                const estimatedReward = Number((actualWeight * categoryRates[activity.category]).toFixed(2));
+                const finalPayment = Number((actualWeight * averageRate).toFixed(2));
                 updateActivity(activity.id, {
                     actualWeight,
-                    estimatedReward,
-                    status: 'Weight recorded — reward pending confirmation'
+                    averageRate,
+                    finalPayment,
+                    status: 'Final payment calculated — not paid'
                 });
             }
 
@@ -2337,11 +2370,10 @@
         document.getElementById('historyList').addEventListener('click', handleHistoryAction);
 
         // COLLECTION REQUESTS
-        function updateSellEst(type, val) {
-            sellData[type] = Number.parseInt(val, 10);
-            document.getElementById(`val${type}`).textContent = `${val} kg`;
+        function updateSellSelection(type, selected) {
+            sellData[type] = selected;
             document.getElementById('selectedPickupCount').textContent =
-                Object.values(sellData).filter(weight => weight > 0).length;
+                Object.values(sellData).filter(Boolean).length;
         }
 
         function processSale() {
@@ -2350,8 +2382,14 @@
                 { key: 'Bag', category: 'Polythene Bag' },
                 { key: 'Box', category: 'Cardboard' }
             ];
-            const selected = requestTypes.filter(item => sellData[item.key] > 0);
+            const selected = requestTypes.filter(item => sellData[item.key]);
             if (selected.length === 0) return alert('Select at least one waste category for pickup.');
+            const pickupLocation = document.getElementById('pickupAddressInput').value.trim();
+            if (!pickupLocation) {
+                alert('Enter the pickup address before requesting collection.');
+                document.getElementById('pickupAddressInput').focus();
+                return;
+            }
             if (!confirm('Request collection? Actual weight and rewards are recorded after pickup.')) return;
 
             const createdAt = new Date().toISOString();
@@ -2360,9 +2398,11 @@
                 source: 'Recyclables collection request',
                 imageName: null,
                 category: item.category,
-                requestedWeight: sellData[item.key],
+                averageRate: categoryRates[item.category],
+                pickupLocation,
+                requestedWeight: null,
                 actualWeight: null,
-                estimatedReward: null,
+                finalPayment: null,
                 confirmedReward: null,
                 status: 'Collection requested',
                 createdAt
@@ -2370,12 +2410,9 @@
             if (!saveActivities(requests)) return;
 
             Object.keys(sellData).forEach(type => {
-                sellData[type] = 0;
-                const slider = document.querySelector(`[oninput*="'${type}'"]`);
-                if (slider) slider.value = 0;
-                const label = document.getElementById(`val${type}`);
-                if (label) label.textContent = '0 kg';
+                sellData[type] = false;
             });
+            document.querySelectorAll('.pickup-category-option input').forEach(input => { input.checked = false; });
             document.getElementById('selectedPickupCount').textContent = '0';
             const historyNav = [...document.querySelectorAll('.sidebar .nav-item')]
                 .find(item => item.getAttribute('onclick')?.includes("'history'"));
