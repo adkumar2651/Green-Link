@@ -1318,6 +1318,11 @@
             </div>
             <p class="demo-pickup-message" id="pickupDemoMessage"></p>
             <p class="demo-pickup-message" id="pickupDemoDetails"></p>
+            <div id="pickupCountdownPanel" hidden
+                style="margin-top:16px;padding:12px 16px;text-align:center;border:1px solid var(--glass-border);border-radius:12px;background:rgba(15,23,42,.7);">
+                <p class="demo-pickup-message" style="margin:0 0 6px;">Our collection partner is on the way.</p>
+                <strong id="pickupCountdown" aria-live="polite" style="font-size:1.35rem;color:var(--neon-green);font-variant-numeric:tabular-nums;">00:30</strong>
+            </div>
             <button class="scanner-button primary" type="button" style="width:100%;margin-top:12px;" onclick="closePickupDemoDialog()">Continue</button>
         </div>
     </div>
@@ -1802,8 +1807,9 @@
         let previewUrl = null;
         let activitySequence = 0;
         let walletAnimationFrame = null;
-        const DEMO_PICKUP_DELAY_MS = 60 * 1000;
+        const DEMO_PICKUP_DELAY_MS = 30 * 1000;
         const DEMO_PICKUP_WEIGHT_KG = 2.5;
+        let pickupCountdownInterval = null;
 
         // REMOVE SPLASH
         setTimeout(() => {
@@ -2104,7 +2110,8 @@
             showPickupDemoDialog(
                 'Pickup Confirmed!',
                 'Our collection partner is on the way to your location.',
-                'DEMO: This pickup is simulated on an accelerated 1-minute timer. No real collector is dispatched.'
+                'DEMO: This pickup is simulated on an accelerated 30-second timer. No real collector is dispatched.',
+                activity
             );
             const historyNav = [...document.querySelectorAll('.sidebar .nav-item')]
                 .find(item => item.getAttribute('onclick')?.includes("'history'"));
@@ -2171,10 +2178,30 @@
             notice.textContent = message || '';
         }
 
-        function showPickupDemoDialog(title, message, details) {
+        function showPickupDemoDialog(title, message, details, activity = null) {
+            if (pickupCountdownInterval != null) {
+                clearInterval(pickupCountdownInterval);
+                pickupCountdownInterval = null;
+            }
             document.getElementById('pickupDemoTitle').textContent = title;
             document.getElementById('pickupDemoMessage').textContent = message;
             document.getElementById('pickupDemoDetails').textContent = details;
+            const countdownPanel = document.getElementById('pickupCountdownPanel');
+            countdownPanel.hidden = !activity;
+            if (activity) {
+                const updateCountdown = () => {
+                    const remainingSeconds = Math.max(0, Math.ceil((new Date(activity.demoPickupAt).getTime() - Date.now()) / 1000));
+                    const minutes = String(Math.floor(remainingSeconds / 60)).padStart(2, '0');
+                    const seconds = String(remainingSeconds % 60).padStart(2, '0');
+                    document.getElementById('pickupCountdown').textContent = `${minutes}:${seconds}`;
+                    if (remainingSeconds === 0 && pickupCountdownInterval != null) {
+                        clearInterval(pickupCountdownInterval);
+                        pickupCountdownInterval = null;
+                    }
+                };
+                updateCountdown();
+                pickupCountdownInterval = window.setInterval(updateCountdown, 1000);
+            }
             document.getElementById('pickupDemoModal').classList.add('active');
         }
 
@@ -2191,6 +2218,7 @@
         function completeDemoPickup(activityId) {
             const selectedActivity = activities.find(item => item.id === activityId);
             if (!selectedActivity || selectedActivity.demoPickupCompletedAt || selectedActivity.actualWeight != null) return;
+            document.getElementById('pickupCountdown').textContent = '00:00';
 
             const batch = selectedActivity.demoPickupBatchId
                 ? activities.filter(item => item.demoPickupBatchId === selectedActivity.demoPickupBatchId)
@@ -2234,6 +2262,10 @@
             renderHistory();
             renderRecentActivity();
             updateWalletUI({ animateCash: true });
+            if (pickupCountdownInterval != null) {
+                clearInterval(pickupCountdownInterval);
+                pickupCountdownInterval = null;
+            }
             const demoWeight = batch.reduce((total, item) =>
                 total + (Number(item.demoWeight) || DEMO_PICKUP_WEIGHT_KG), 0);
             showPickupDemoDialog(
@@ -2547,7 +2579,8 @@
             showPickupDemoDialog(
                 'Pickup Confirmed!',
                 'Our collection partner is on the way to your location.',
-                'DEMO: This pickup is simulated on an accelerated 1-minute timer. No real collector is dispatched.'
+                'DEMO: This pickup is simulated on an accelerated 30-second timer. No real collector is dispatched.',
+                requests[0]
             );
 
             Object.keys(sellData).forEach(type => {
@@ -2604,6 +2637,12 @@
             if (scheduledDemoBatches.has(batchId)) return;
             scheduledDemoBatches.add(batchId);
             scheduleDemoPickup(activity);
+            showPickupDemoDialog(
+                'Pickup Confirmed!',
+                'Our collection partner is on the way to your location.',
+                'DEMO: This pickup is simulated on an accelerated 30-second timer. No real collector is dispatched.',
+                activity
+            );
         });
 
         if (new URLSearchParams(window.location.search).get('openScanner') === '1') {
