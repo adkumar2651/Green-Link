@@ -1841,6 +1841,8 @@
         }
 
         // IMAGE-BASED WASTE IDENTIFICATION
+        const SCANNER_API_URL = 'https://green-link.onrender.com/api/identify';
+
         function toggleScanner() {
             resetScanner();
             document.getElementById('scannerOverlay').style.display = 'flex';
@@ -1856,7 +1858,7 @@
             const contentType = response.headers.get('content-type') || '';
             const responseText = await response.text();
             if (!contentType.toLowerCase().includes('application/json')) {
-                const endpoint = response.url || new URL('/api/identify', window.location.href).href;
+                const endpoint = response.url || SCANNER_API_URL;
                 const isHtml = contentType.toLowerCase().includes('text/html')
                     || /^\s*(?:<!doctype\s+html|<html\b)/i.test(responseText);
                 if (isHtml) {
@@ -1990,7 +1992,7 @@
                     reader.onerror = () => reject(new Error('The selected image could not be read.'));
                     reader.readAsDataURL(file);
                 });
-                const response = await fetch('/api/identify', {
+                const response = await fetch(SCANNER_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

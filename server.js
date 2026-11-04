@@ -6,6 +6,7 @@ const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || "0.0.0.0";
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_REQUEST_BYTES = Math.ceil(MAX_IMAGE_BYTES * 4 / 3) + 32 * 1024;
+const ALLOWED_ORIGIN = "https://adkumar2651.github.io";
 if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
     throw new Error("PORT must be an integer between 1 and 65535.");
 }
@@ -173,8 +174,25 @@ async function identifyImage(request, response) {
 }
 
 const server = http.createServer((request, response) => {
+    const origin = request.headers.origin;
+    if (origin === ALLOWED_ORIGIN) {
+        response.setHeader("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
+        response.setHeader("Vary", "Origin");
+    }
+
     (async () => {
         const requestUrl = new URL(request.url, `http://${request.headers.host || "localhost"}`);
+        if (request.method === "OPTIONS" && requestUrl.pathname === "/api/identify") {
+            if (origin === ALLOWED_ORIGIN) {
+                response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+                response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+                response.setHeader("Access-Control-Max-Age", "86400");
+            }
+            response.writeHead(204);
+            response.end();
+            return;
+        }
+
         if (request.method === "POST" && requestUrl.pathname === "/api/identify") {
             await identifyImage(request, response);
             return;
