@@ -3,7 +3,7 @@ const { readFile } = require("node:fs/promises");
 const path = require("node:path");
 
 const PORT = Number(process.env.PORT || 3000);
-const HOST = process.env.HOST || "127.0.0.1";
+const HOST = process.env.HOST || "0.0.0.0";
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_REQUEST_BYTES = Math.ceil(MAX_IMAGE_BYTES * 4 / 3) + 32 * 1024;
 if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
