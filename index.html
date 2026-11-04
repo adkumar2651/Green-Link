@@ -437,6 +437,12 @@
             transform: scale(1);
         }
 
+        .demo-pickup-message {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin: 12px 0;
+        }
+
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -1304,6 +1310,18 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="pickupDemoModal" role="dialog" aria-modal="true" aria-labelledby="pickupDemoTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="pickupDemoTitle" style="color:#fff;">Pickup Confirmed!</h2>
+                <button class="scanner-button" type="button" aria-label="Close dialog" onclick="closePickupDemoDialog()">×</button>
+            </div>
+            <p class="demo-pickup-message" id="pickupDemoMessage"></p>
+            <p class="demo-pickup-message" id="pickupDemoDetails"></p>
+            <button class="scanner-button primary" type="button" style="width:100%;margin-top:12px;" onclick="closePickupDemoDialog()">Continue</button>
+        </div>
+    </div>
+
     <!-- SCANNER OVERLAY -->
     <div class="scanner-overlay" id="scannerOverlay">
         <div class="scanner-content">
@@ -1783,6 +1801,9 @@
         let videoStream = null;
         let previewUrl = null;
         let activitySequence = 0;
+        let walletAnimationFrame = null;
+        const DEMO_PICKUP_DELAY_MS = 60 * 1000;
+        const DEMO_PICKUP_WEIGHT_KG = 2.5;
 
         // REMOVE SPLASH
         setTimeout(() => {
@@ -2066,6 +2087,9 @@
                 actualWeight: null,
                 finalPayment: null,
                 confirmedReward: null,
+                demoPickupBatchId: createActivityId(),
+                demoWeight: DEMO_PICKUP_WEIGHT_KG,
+                demoPickupAt: new Date(Date.now() + DEMO_PICKUP_DELAY_MS).toISOString(),
                 status: 'Collection requested',
                 createdAt: new Date().toISOString()
             };
@@ -2076,6 +2100,12 @@
 
             pendingScan = null;
             closeScanner();
+            scheduleDemoPickup(activity);
+            showPickupDemoDialog(
+                'Pickup Confirmed!',
+                'Our collection partner is on the way to your location.',
+                'DEMO: This pickup is simulated on an accelerated 1-minute timer. No real collector is dispatched.'
+            );
             const historyNav = [...document.querySelectorAll('.sidebar .nav-item')]
                 .find(item => item.getAttribute('onclick')?.includes("'history'"));
             switchView('history', historyNav);
@@ -2139,6 +2169,78 @@
             if (!notice) return;
             notice.hidden = !message;
             notice.textContent = message || '';
+        }
+
+        function showPickupDemoDialog(title, message, details) {
+            document.getElementById('pickupDemoTitle').textContent = title;
+            document.getElementById('pickupDemoMessage').textContent = message;
+            document.getElementById('pickupDemoDetails').textContent = details;
+            document.getElementById('pickupDemoModal').classList.add('active');
+        }
+
+        function closePickupDemoDialog() {
+            document.getElementById('pickupDemoModal').classList.remove('active');
+        }
+
+        function scheduleDemoPickup(activity) {
+            if (!activity.demoPickupAt || activity.demoPickupCompletedAt || activity.actualWeight != null) return;
+            const delay = Math.max(0, new Date(activity.demoPickupAt).getTime() - Date.now());
+            window.setTimeout(() => completeDemoPickup(activity.id), delay);
+        }
+
+        function completeDemoPickup(activityId) {
+            const selectedActivity = activities.find(item => item.id === activityId);
+            if (!selectedActivity || selectedActivity.demoPickupCompletedAt || selectedActivity.actualWeight != null) return;
+
+            const batch = selectedActivity.demoPickupBatchId
+                ? activities.filter(item => item.demoPickupBatchId === selectedActivity.demoPickupBatchId)
+                : [selectedActivity];
+            const completedAt = new Date().toISOString();
+            let totalReward = 0;
+            const updated = activities.map(activity => {
+                if (!batch.some(item => item.id === activity.id)
+                    || activity.demoPickupCompletedAt
+                    || activity.actualWeight != null) return activity;
+
+                const averageRate = Number(activity.averageRate) || categoryRates[activity.category];
+                const actualWeight = Number(activity.demoWeight) || DEMO_PICKUP_WEIGHT_KG;
+                if (!Number.isFinite(averageRate) || averageRate <= 0) {
+                    console.error('Demo pickup could not be completed because the category has no configured rate.');
+                    return activity;
+                }
+                const finalPayment = Number((actualWeight * averageRate).toFixed(2));
+                totalReward += finalPayment;
+                return {
+                    ...activity,
+                    actualWeight,
+                    finalPayment,
+                    confirmedReward: finalPayment,
+                    demoPickupCompletedAt: completedAt,
+                    status: 'DEMO pickup complete — reward credited'
+                };
+            });
+
+            if (totalReward <= 0 || updated.every((activity, index) => activity === activities[index])) return;
+            try {
+                localStorage.setItem(historyStorageKey, JSON.stringify(updated));
+            } catch (error) {
+                console.error('Demo pickup could not be saved:', error.message);
+                setHistoryNotice('The demo pickup was not saved. Enable browser local storage and reload to retry.');
+                return;
+            }
+
+            activities = updated;
+            setHistoryNotice('');
+            renderHistory();
+            renderRecentActivity();
+            updateWalletUI({ animateCash: true });
+            const demoWeight = batch.reduce((total, item) =>
+                total + (Number(item.demoWeight) || DEMO_PICKUP_WEIGHT_KG), 0);
+            showPickupDemoDialog(
+                'Waste Collected Successfully!',
+                'Your waste has been weighed and your reward has been credited to your wallet.',
+                `DEMO weight: ${demoWeight} kg. Simulated reward credited: ${formatINR(totalReward)}. No real collection or payment occurred.`
+            );
         }
 
         function loadActivities() {
@@ -2210,8 +2312,10 @@
 
             const date = new Date(activity.createdAt);
             const dateText = Number.isNaN(date.getTime()) ? 'Date unavailable' : date.toLocaleString();
-            const rewardText = activity.finalPayment != null
-                ? `Final payment: ${formatINR(activity.finalPayment)} (not paid)`
+            const rewardText = activity.demoPickupCompletedAt
+                ? `DEMO reward credited to wallet: ${formatINR(activity.finalPayment)} (simulated; no payment)`
+                : activity.finalPayment != null
+                    ? `Final payment: ${formatINR(activity.finalPayment)} (not paid)`
                 : activity.confirmedReward != null
                 ? `Confirmed reward: ${formatINR(activity.confirmedReward)} (not transferred)`
                 : activity.estimatedReward != null
@@ -2228,14 +2332,39 @@
                 createDetail('Pickup address', activity.pickupLocation || 'Not recorded'),
                 createDetail('Estimated rate', averageRate ? `${formatINR(averageRate)} per kg` : 'Not configured'),
                 createDetail('Pickup estimate', requestedText),
-                createDetail('Actual collection weight', activity.actualWeight != null ? `${activity.actualWeight} kg` : 'Not recorded by partner'),
                 createDetail('Reward', rewardText),
                 createDetail('Collection status', activity.status),
                 createDetail('Date and time', dateText)
             );
+            if (!activity.demoPickupCompletedAt) {
+                details.append(createDetail(
+                    'Actual collection weight',
+                    activity.actualWeight != null ? `${activity.actualWeight} kg` : 'Not recorded by partner'
+                ));
+            }
             card.appendChild(details);
 
-            if (activity.actualWeight == null && activity.status === 'Collection requested') {
+            if (activity.demoPickupCompletedAt) {
+                const demoWeightField = document.createElement('div');
+                demoWeightField.className = 'history-controls';
+                const label = document.createElement('label');
+                label.textContent = 'Actual collection weight (DEMO)';
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.value = String(activity.actualWeight);
+                input.readOnly = true;
+                input.disabled = true;
+                input.setAttribute('aria-label', 'Actual collection weight, simulated demo value');
+                const note = document.createElement('span');
+                note.textContent = 'Simulated demonstration value; not collector-measured.';
+                demoWeightField.append(label, input, note);
+                card.appendChild(demoWeightField);
+            } else if (activity.actualWeight == null && activity.demoPickupAt) {
+                const demoStatus = document.createElement('p');
+                demoStatus.className = 'history-controls';
+                demoStatus.textContent = 'DEMO pickup in progress. Simulated weighing starts automatically after 1 minute.';
+                card.appendChild(demoStatus);
+            } else if (activity.actualWeight == null && activity.status === 'Collection requested') {
                 const partnerForm = document.createElement('div');
                 partnerForm.className = 'history-controls';
                 const label = document.createElement('label');
@@ -2393,6 +2522,8 @@
             if (!confirm('Request collection? Actual weight and rewards are recorded after pickup.')) return;
 
             const createdAt = new Date().toISOString();
+            const demoPickupBatchId = createActivityId();
+            const demoPickupAt = new Date(Date.now() + DEMO_PICKUP_DELAY_MS).toISOString();
             const requests = selected.map(item => ({
                 id: createActivityId(),
                 source: 'Recyclables collection request',
@@ -2404,10 +2535,20 @@
                 actualWeight: null,
                 finalPayment: null,
                 confirmedReward: null,
+                demoPickupBatchId,
+                demoWeight: DEMO_PICKUP_WEIGHT_KG,
+                demoPickupAt,
                 status: 'Collection requested',
                 createdAt
             }));
             if (!saveActivities(requests)) return;
+
+            requests.forEach(scheduleDemoPickup);
+            showPickupDemoDialog(
+                'Pickup Confirmed!',
+                'Our collection partner is on the way to your location.',
+                'DEMO: This pickup is simulated on an accelerated 1-minute timer. No real collector is dispatched.'
+            );
 
             Object.keys(sellData).forEach(type => {
                 sellData[type] = false;
@@ -2425,9 +2566,30 @@
             else { alert("Insufficient Coins."); }
         }
 
-        function updateWalletUI() {
+        function updateWalletUI({ animateCash = false } = {}) {
+            const previousCash = cash;
             cash = activities.reduce((total, activity) => total + (Number(activity.confirmedReward) || 0), 0);
-            document.getElementById('cashBalance').textContent = formatINR(cash);
+            const cashBalance = document.getElementById('cashBalance');
+            if (walletAnimationFrame != null) cancelAnimationFrame(walletAnimationFrame);
+            if (animateCash && cash > previousCash) {
+                const targetCash = cash;
+                const startTime = performance.now();
+                const duration = 1200;
+                const animate = now => {
+                    const progress = Math.min(1, (now - startTime) / duration);
+                    const eased = 1 - (1 - progress) ** 3;
+                    cashBalance.textContent = formatINR(previousCash + (targetCash - previousCash) * eased);
+                    if (progress < 1) {
+                        walletAnimationFrame = requestAnimationFrame(animate);
+                    } else {
+                        walletAnimationFrame = null;
+                    }
+                };
+                walletAnimationFrame = requestAnimationFrame(animate);
+            } else {
+                cashBalance.textContent = formatINR(cash);
+                walletAnimationFrame = null;
+            }
             document.getElementById('coinBalance').innerText = coins + " EC";
             document.getElementById('marketBalance').innerText = coins;
         }
@@ -2435,6 +2597,14 @@
         renderHistory();
         renderRecentActivity();
         updateWalletUI();
+        const scheduledDemoBatches = new Set();
+        activities.forEach(activity => {
+            if (!activity.demoPickupAt || activity.demoPickupCompletedAt) return;
+            const batchId = activity.demoPickupBatchId || activity.id;
+            if (scheduledDemoBatches.has(batchId)) return;
+            scheduledDemoBatches.add(batchId);
+            scheduleDemoPickup(activity);
+        });
 
         if (new URLSearchParams(window.location.search).get('openScanner') === '1') {
             const inventoryNav = [...document.querySelectorAll('.sidebar .nav-item')]
